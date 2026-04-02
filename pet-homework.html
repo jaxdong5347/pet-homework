@@ -2,757 +2,316 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>🐾 作业宠物乐园</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
-
   :root {
-    --pink: #FF8FAB;
-    --yellow: #FFD166;
-    --mint: #06D6A0;
-    --blue: #118AB2;
-    --purple: #9B5DE5;
-    --orange: #FF6B35;
-    --bg: #FFF5F7;
-    --card: #FFFFFF;
-    --text: #2D2D2D;
-    --sub: #888;
-    --border: #F0D9E0;
-    --shadow: 0 8px 32px rgba(255,143,171,0.15);
+    --pink:#FF8FAB; --yellow:#FFD166; --mint:#06D6A0; --blue:#118AB2;
+    --purple:#9B5DE5; --orange:#FF6B35; --bg:#FFF5F7; --card:#FFFFFF;
+    --text:#2D2D2D; --sub:#888;
   }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-  body {
-    font-family: 'Nunito', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ===== ANIMATIONS ===== */
-  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-  @keyframes wiggle { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
-  @keyframes pop { 0%{transform:scale(0);opacity:0} 70%{transform:scale(1.2)} 100%{transform:scale(1);opacity:1} }
-  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-  @keyframes sparkle { 0%,100%{opacity:1;transform:scale(1) rotate(0deg)} 50%{opacity:0.7;transform:scale(1.3) rotate(180deg)} }
-  @keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
-  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-  @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
-  @keyframes heartbeat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
-  @keyframes confetti-fall {
-    0%{transform:translateY(-20px) rotate(0deg);opacity:1}
-    100%{transform:translateY(100vh) rotate(720deg);opacity:0}
-  }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
-  @keyframes glow { 0%,100%{box-shadow:0 0 10px rgba(255,209,102,0.5)} 50%{box-shadow:0 0 25px rgba(255,209,102,0.9)} }
-
-  .anim-bounce { animation: bounce 1.5s ease-in-out infinite; }
-  .anim-wiggle { animation: wiggle 0.8s ease-in-out infinite; }
-  .anim-float { animation: float 2s ease-in-out infinite; }
-  .anim-sparkle { animation: sparkle 1.5s ease-in-out infinite; }
-  .anim-heartbeat { animation: heartbeat 1s ease-in-out infinite; }
-
-  /* ===== SCREENS ===== */
-  .screen { display: none; min-height: 100vh; animation: fadeIn 0.3s ease; }
-  .screen.active { display: block; }
-
-  /* ===== SELECT PET SCREEN ===== */
-  #screen-select {
-    background: linear-gradient(160deg, #FFE8EF 0%, #FFF5C0 50%, #E8F5FF 100%);
-    padding: 40px 20px;
-    text-align: center;
-  }
-  .select-title { font-size: 28px; font-weight: 900; color: var(--text); margin-bottom: 6px; }
-  .select-sub { font-size: 14px; color: var(--sub); margin-bottom: 32px; }
-  .pet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 360px; margin: 0 auto 28px; }
-  .pet-option {
-    background: white;
-    border-radius: 24px;
-    padding: 24px 16px;
-    cursor: pointer;
-    border: 3px solid transparent;
-    transition: all 0.25s;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-  }
-  .pet-option:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,0.1); }
-  .pet-option.selected { border-color: var(--pink); background: #FFF0F5; }
-  .pet-option .pet-emoji { font-size: 52px; display: block; margin-bottom: 8px; }
-  .pet-option .pet-name { font-size: 16px; font-weight: 800; color: var(--text); }
-  .pet-option .pet-desc { font-size: 12px; color: var(--sub); margin-top: 3px; }
-  .btn-start {
-    background: linear-gradient(135deg, var(--pink), #FF6B9D);
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 16px 48px;
-    font-size: 18px;
-    font-weight: 900;
-    cursor: pointer;
-    box-shadow: 0 6px 24px rgba(255,107,157,0.4);
-    transition: all 0.2s;
-    font-family: inherit;
-  }
-  .btn-start:active { transform: scale(0.96); }
-
-  /* ===== MAIN SCREEN ===== */
-  #screen-main { background: var(--bg); padding-bottom: 80px; }
-
-  /* Top bar */
-  .topbar {
-    background: white;
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-    position: sticky;
-    top: 0;
-    z-index: 50;
-  }
-  .topbar-left { font-size: 18px; font-weight: 900; color: var(--text); }
-  .topbar-coins {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: linear-gradient(135deg, #FFD166, #FFA500);
-    color: white;
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 15px;
-    font-weight: 800;
-  }
-
-  /* Pet room */
-  .pet-room {
-    margin: 16px;
-    background: linear-gradient(160deg, #E8F4FF 0%, #FFF5F7 100%);
-    border-radius: 28px;
-    padding: 20px;
-    position: relative;
-    overflow: hidden;
-    min-height: 220px;
-    border: 2px solid #F0E8FF;
-  }
-  .room-bg { position: absolute; inset: 0; pointer-events: none; }
-  .room-floor {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 50px;
-    background: linear-gradient(180deg, transparent, rgba(255,200,220,0.3));
-    border-radius: 0 0 26px 26px;
-  }
-  .pet-stage {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-  }
-  .pet-display { font-size: 80px; line-height: 1; position: relative; cursor: pointer; }
-  .pet-outfit-hat { position: absolute; top: -28px; left: 50%; transform: translateX(-50%); font-size: 36px; }
-  .pet-outfit-acc { position: absolute; bottom: 0; right: -10px; font-size: 28px; }
-  .pet-outfit-clothes { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); font-size: 32px; }
-  .pet-speech {
-    background: white;
-    border: 2px solid #FFD6E7;
-    border-radius: 16px;
-    padding: 8px 14px;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    margin-top: 12px;
-    max-width: 220px;
-    text-align: center;
-    position: relative;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.06);
-  }
-  .pet-speech::before {
-    content: '';
-    position: absolute;
-    top: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-bottom-color: #FFD6E7;
-  }
-  .room-furniture { position: absolute; bottom: 12px; }
-  .room-furniture.left { left: 16px; font-size: 28px; }
-  .room-furniture.right { right: 16px; font-size: 28px; }
-
-  /* Status bar */
-  .status-bar {
-    margin: 0 16px 12px;
-    background: white;
-    border-radius: 20px;
-    padding: 14px 18px;
-    display: flex;
-    gap: 16px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.05);
-  }
-  .stat-item { flex: 1; text-align: center; }
-  .stat-num { font-size: 22px; font-weight: 900; }
-  .stat-label { font-size: 11px; color: var(--sub); font-weight: 600; margin-top: 1px; }
-
-  /* Progress to next unlock */
-  .unlock-progress {
-    margin: 0 16px 12px;
-    background: white;
-    border-radius: 20px;
-    padding: 14px 18px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.05);
-  }
-  .unlock-title { font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-  .unlock-next { font-size: 20px; }
-  .progress-bar { height: 10px; background: #F5F5F5; border-radius: 10px; overflow: hidden; }
-  .progress-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, var(--pink), var(--purple)); transition: width 0.8s cubic-bezier(.34,1.56,.64,1); }
-
-  /* Nav tabs */
-  .nav-tabs {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    background: white;
-    display: flex;
-    padding: 8px 0 16px;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
-    z-index: 50;
-  }
-  .nav-tab {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    cursor: pointer;
-    padding: 6px 0;
-    border: none;
-    background: none;
-    font-family: inherit;
-    transition: all 0.2s;
-  }
-  .nav-tab .tab-icon { font-size: 24px; transition: transform 0.2s; }
-  .nav-tab .tab-label { font-size: 11px; font-weight: 700; color: var(--sub); }
-  .nav-tab.active .tab-icon { transform: scale(1.2); }
-  .nav-tab.active .tab-label { color: var(--pink); }
-
-  /* Tab panels */
-  .tab-panel { display: none; padding: 0 16px 20px; animation: slideUp 0.3s ease; }
-  .tab-panel.active { display: block; }
-
-  /* Section title */
-  .section-title { font-size: 16px; font-weight: 900; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
-
-  /* Homework panel */
-  .hw-card {
-    background: white;
-    border-radius: 20px;
-    padding: 18px;
-    margin-bottom: 12px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.05);
-  }
-  .subject-row {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 12px 16px;
-    border-radius: 14px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 2.5px solid transparent;
-  }
-  .subject-row:last-child { margin-bottom: 0; }
-  .subject-row.done { background: #F0FFF6; border-color: #B7EDCE; }
-  .subject-row.undone { background: #FFF5F7; border-color: #FFD6E7; }
-  .subject-icon { font-size: 28px; flex-shrink: 0; }
-  .subject-info { flex: 1; }
-  .subject-name { font-size: 15px; font-weight: 800; }
-  .subject-reward { font-size: 12px; color: var(--sub); margin-top: 2px; }
-  .subject-check { font-size: 24px; }
-
-  .btn-confirm {
-    width: 100%;
-    padding: 15px;
-    border-radius: 16px;
-    border: none;
-    font-size: 16px;
-    font-weight: 900;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.2s;
-    margin-top: 4px;
-  }
-  .btn-confirm.ready { background: linear-gradient(135deg, #06D6A0, #00B384); color: white; box-shadow: 0 6px 20px rgba(6,214,160,0.35); }
-  .btn-confirm.notready { background: #F0F0F0; color: #aaa; cursor: not-allowed; }
-  .btn-confirm.done-today { background: linear-gradient(135deg, #FFD166, #FFA500); color: white; }
-
-  /* Weekly panel */
-  .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 16px; }
-  .day-cell {
-    aspect-ratio: 1;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    font-weight: 800;
-    transition: all 0.2s;
-  }
-  .day-cell .day-name { font-size: 9px; color: var(--sub); }
-  .day-cell .day-icon { font-size: 18px; }
-  .day-cell.completed { background: linear-gradient(135deg, #FFE8EF, #FFD6E7); }
-  .day-cell.today { background: linear-gradient(135deg, #E8FFFA, #D0FFF0); border: 2px solid var(--mint); }
-  .day-cell.future { background: #F5F5F5; }
-  .day-cell.missed { background: #F0F0F0; opacity: 0.5; }
-
-  .weekly-reward-card {
-    background: linear-gradient(135deg, #FFF5C0, #FFE8EF);
-    border-radius: 20px;
-    padding: 16px;
-    margin-bottom: 12px;
-    border: 2px solid #FFD166;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .weekly-reward-icon { font-size: 40px; }
-  .weekly-reward-info { flex: 1; }
-  .weekly-reward-title { font-size: 14px; font-weight: 800; }
-  .weekly-reward-desc { font-size: 12px; color: var(--sub); margin-top: 3px; }
-  .weekly-reward-prog { font-size: 12px; color: var(--orange); font-weight: 700; margin-top: 6px; }
-
-  /* Shop / Food panel */
-  .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .shop-item {
-    background: white;
-    border-radius: 18px;
-    padding: 16px 12px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: 2.5px solid transparent;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.05);
-    position: relative;
-  }
-  .shop-item:hover { transform: translateY(-2px); }
-  .shop-item.locked { opacity: 0.5; cursor: not-allowed; }
-  .shop-item.owned { border-color: var(--mint); background: #F0FFF8; }
-  .shop-item .item-emoji { font-size: 40px; margin-bottom: 6px; }
-  .shop-item .item-name { font-size: 13px; font-weight: 800; }
-  .shop-item .item-price { font-size: 12px; color: var(--orange); font-weight: 700; margin-top: 4px; }
-  .shop-item .lock-badge {
-    position: absolute;
-    top: 8px; right: 8px;
-    font-size: 14px;
-  }
-  .shop-item .unlock-info { font-size: 10px; color: var(--sub); margin-top: 3px; }
-
-  /* Wardrobe panel */
-  .wardrobe-section { margin-bottom: 20px; }
-  .wardrobe-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .wardrobe-item {
-    background: white;
-    border-radius: 14px;
-    padding: 12px 8px;
-    text-align: center;
-    cursor: pointer;
-    border: 2.5px solid transparent;
-    transition: all 0.2s;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  }
-  .wardrobe-item.equipped { border-color: var(--purple); background: #F5F0FF; }
-  .wardrobe-item.locked { opacity: 0.4; cursor: not-allowed; }
-  .wardrobe-item .item-emoji { font-size: 28px; }
-  .wardrobe-item .item-label { font-size: 10px; color: var(--sub); margin-top: 4px; font-weight: 700; }
-
-  /* Milestones panel */
-  .milestone-item {
-    background: white;
-    border-radius: 18px;
-    padding: 16px;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.05);
-    transition: all 0.3s;
-  }
-  .milestone-item.unlocked { border-left: 4px solid var(--mint); }
-  .milestone-item.locked-ms { border-left: 4px solid #E5E5E5; opacity: 0.7; }
-  .milestone-item.current { border-left: 4px solid var(--yellow); animation: glow 2s ease-in-out infinite; }
-  .milestone-icon { font-size: 36px; flex-shrink: 0; }
-  .milestone-info { flex: 1; }
-  .milestone-name { font-size: 14px; font-weight: 800; }
-  .milestone-desc { font-size: 12px; color: var(--sub); margin-top: 2px; }
-  .milestone-badge { font-size: 20px; }
-
-  /* Parent modal */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 200;
-    align-items: flex-end;
-    justify-content: center;
-    animation: fadeIn 0.2s ease;
-  }
-  .modal-overlay.show { display: flex; }
-  .modal-box {
-    background: white;
-    border-radius: 28px 28px 0 0;
-    padding: 28px 24px 40px;
-    width: 100%;
-    max-width: 500px;
-    animation: slideUp 0.3s ease;
-  }
-  .modal-title { font-size: 20px; font-weight: 900; text-align: center; margin-bottom: 6px; }
-  .modal-sub { font-size: 13px; color: var(--sub); text-align: center; margin-bottom: 24px; }
-  .pin-display {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    margin-bottom: 20px;
-  }
-  .pin-dot {
-    width: 48px; height: 48px;
-    border-radius: 12px;
-    background: #F5F5F5;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px; font-weight: 900;
-    transition: all 0.2s;
-  }
-  .pin-dot.filled { background: var(--pink); color: white; }
-  .pin-dot.error { background: #FF4D4D; animation: shake 0.4s ease; }
-  .numpad {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    max-width: 260px;
-    margin: 0 auto 20px;
-  }
-  .num-btn {
-    height: 56px;
-    border-radius: 14px;
-    border: none;
-    background: #F5F5F5;
-    font-size: 20px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: inherit;
-  }
-  .num-btn:active { transform: scale(0.92); background: #E5E5E5; }
-  .num-btn.del { background: #FFE8EF; color: var(--pink); }
-  .num-btn.confirm-btn { background: linear-gradient(135deg, var(--mint), #00B384); color: white; grid-column: span 2; }
-
-  /* Notification toast */
-  .toast {
-    position: fixed;
-    top: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--text);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 700;
-    z-index: 300;
-    animation: pop 0.3s ease;
-    white-space: nowrap;
-    max-width: 90vw;
-    text-align: center;
-  }
-
-  /* Confetti */
-  .confetti-piece {
-    position: fixed;
-    width: 10px; height: 10px;
-    border-radius: 2px;
-    animation: confetti-fall linear forwards;
-    z-index: 500;
-    pointer-events: none;
-  }
-
-  /* Celebration overlay */
-  .celebrate-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 400;
-    align-items: center;
-    justify-content: center;
-  }
-  .celebrate-overlay.show { display: flex; animation: fadeIn 0.3s ease; }
-  .celebrate-box {
-    background: white;
-    border-radius: 32px;
-    padding: 40px 32px;
-    text-align: center;
-    animation: pop 0.5s cubic-bezier(.34,1.56,.64,1);
-    max-width: 300px;
-    width: 90%;
-  }
-  .celebrate-icon { font-size: 72px; margin-bottom: 12px; }
-  .celebrate-title { font-size: 24px; font-weight: 900; margin-bottom: 6px; }
-  .celebrate-desc { font-size: 14px; color: var(--sub); margin-bottom: 20px; line-height: 1.6; }
-  .btn-close {
-    background: linear-gradient(135deg, var(--pink), #FF6B9D);
-    color: white; border: none; border-radius: 16px;
-    padding: 14px 32px; font-size: 16px; font-weight: 800;
-    cursor: pointer; font-family: inherit;
-  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Nunito','PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  @keyframes wiggle{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+  @keyframes pop{0%{transform:scale(0);opacity:0}70%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  @keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+  @keyframes glow{0%,100%{box-shadow:0 0 10px rgba(255,209,102,.5)}50%{box-shadow:0 0 28px rgba(255,209,102,.95)}}
+  @keyframes confetti-fall{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+  @keyframes tail-wag{0%,100%{transform:rotate(0deg) translateX(0)}50%{transform:rotate(25deg) translateX(3px)}}
+  @keyframes wing-flap{0%,100%{transform:scaleX(1) scaleY(1)}50%{transform:scaleX(0.6) scaleY(1.1)}}
+  @keyframes blink{0%,88%,100%{transform:scaleY(1)}93%{transform:scaleY(0.05)}}
+  .screen{display:none;min-height:100vh;animation:fadeIn .3s ease}
+  .screen.active{display:block}
+  #screen-select{background:linear-gradient(160deg,#FFE8EF 0%,#FFF5C0 50%,#E8F5FF 100%);padding:36px 20px;text-align:center}
+  .select-title{font-size:26px;font-weight:900;margin-bottom:4px}
+  .select-sub{font-size:13px;color:var(--sub);margin-bottom:28px}
+  .pet-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:360px;margin:0 auto 24px}
+  .pet-option{background:white;border-radius:22px;padding:18px 12px;cursor:pointer;border:3px solid transparent;transition:all .25s;box-shadow:0 4px 18px rgba(0,0,0,.07)}
+  .pet-option:hover{transform:translateY(-4px)}
+  .pet-option.selected{border-color:var(--pink);background:#FFF0F5}
+  .pet-option .pet-name{font-size:15px;font-weight:800;margin-top:6px}
+  .pet-option .pet-desc{font-size:11px;color:var(--sub);margin-top:2px}
+  .btn-start{background:linear-gradient(135deg,var(--pink),#FF6B9D);color:white;border:none;border-radius:18px;padding:15px 44px;font-size:17px;font-weight:900;cursor:pointer;box-shadow:0 6px 22px rgba(255,107,157,.4);font-family:inherit}
+  .btn-start:active{transform:scale(.96)}
+  #screen-main{background:var(--bg);padding-bottom:82px}
+  .topbar{background:white;padding:13px 18px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.06);position:sticky;top:0;z-index:50}
+  .topbar-left{font-size:17px;font-weight:900}
+  .topbar-coins{display:flex;align-items:center;gap:5px;background:linear-gradient(135deg,#FFD166,#FFA500);color:white;border-radius:18px;padding:5px 12px;font-size:14px;font-weight:800}
+  .pet-room{margin:14px;background:linear-gradient(160deg,#EAF6FF 0%,#FFF0F8 100%);border-radius:26px;padding:16px;position:relative;overflow:hidden;min-height:210px;border:2px solid #EEE0FF}
+  .room-floor{position:absolute;bottom:0;left:0;right:0;height:44px;background:linear-gradient(180deg,transparent,rgba(255,180,210,.25));border-radius:0 0 24px 24px}
+  .pet-stage{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:185px}
+  .pet-svg-wrap{position:relative;cursor:pointer;display:inline-block;transition:transform .2s}
+  .pet-hat-layer{position:absolute;top:-28px;left:50%;transform:translateX(-50%);font-size:30px;line-height:1;pointer-events:none}
+  .pet-acc-layer{position:absolute;bottom:12px;right:-14px;font-size:22px;pointer-events:none}
+  .pet-clothes-layer{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);font-size:24px;pointer-events:none}
+  .pet-speech{background:white;border:2px solid #FFD6E7;border-radius:14px;padding:7px 13px;font-size:12px;font-weight:700;color:var(--text);margin-top:10px;max-width:210px;text-align:center;position:relative;box-shadow:0 3px 10px rgba(0,0,0,.06)}
+  .pet-speech::before{content:'';position:absolute;top:-9px;left:50%;transform:translateX(-50%);border:5px solid transparent;border-bottom-color:#FFD6E7}
+  .room-furniture{position:absolute;bottom:14px;font-size:26px}
+  .room-furniture.left{left:14px}.room-furniture.right{right:14px}
+  .status-bar{margin:0 14px 10px;background:white;border-radius:18px;padding:12px 16px;display:flex;gap:12px;box-shadow:0 3px 10px rgba(0,0,0,.05)}
+  .stat-item{flex:1;text-align:center}
+  .stat-num{font-size:20px;font-weight:900}
+  .stat-label{font-size:10px;color:var(--sub);font-weight:600;margin-top:1px}
+  .unlock-progress{margin:0 14px 10px;background:white;border-radius:18px;padding:12px 16px;box-shadow:0 3px 10px rgba(0,0,0,.05)}
+  .progress-bar{height:9px;background:#F5F5F5;border-radius:9px;overflow:hidden}
+  .progress-fill{height:100%;border-radius:9px;background:linear-gradient(90deg,var(--pink),var(--purple));transition:width .8s cubic-bezier(.34,1.56,.64,1)}
+  .nav-tabs{position:fixed;bottom:0;left:0;right:0;background:white;display:flex;padding:7px 0 14px;box-shadow:0 -3px 18px rgba(0,0,0,.08);z-index:50}
+  .nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:5px 0;border:none;background:none;font-family:inherit}
+  .nav-tab .tab-icon{font-size:22px;transition:transform .2s}
+  .nav-tab .tab-label{font-size:10px;font-weight:700;color:var(--sub)}
+  .nav-tab.active .tab-icon{transform:scale(1.2)}
+  .nav-tab.active .tab-label{color:var(--pink)}
+  .tab-panel{display:none;padding:0 14px 18px;animation:slideUp .3s ease}
+  .tab-panel.active{display:block}
+  .section-title{font-size:15px;font-weight:900;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:5px}
+  .hw-card{background:white;border-radius:18px;padding:16px;margin-bottom:10px;box-shadow:0 3px 10px rgba(0,0,0,.05)}
+  .subject-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:13px;margin-bottom:7px;cursor:pointer;transition:all .2s;border:2.5px solid transparent}
+  .subject-row:last-child{margin-bottom:0}
+  .subject-row.done{background:#F0FFF6;border-color:#B7EDCE}
+  .subject-row.undone{background:#FFF5F7;border-color:#FFD6E7}
+  .subject-icon{font-size:26px;flex-shrink:0}
+  .subject-info{flex:1}
+  .subject-name{font-size:14px;font-weight:800}
+  .subject-reward{font-size:11px;color:var(--sub);margin-top:2px}
+  .subject-check{font-size:22px}
+  .btn-confirm{width:100%;padding:14px;border-radius:15px;border:none;font-size:15px;font-weight:900;cursor:pointer;font-family:inherit;transition:all .2s;margin-top:4px}
+  .btn-confirm.ready{background:linear-gradient(135deg,#06D6A0,#00B384);color:white;box-shadow:0 5px 18px rgba(6,214,160,.35)}
+  .btn-confirm.notready{background:#F0F0F0;color:#bbb;cursor:not-allowed}
+  .btn-confirm.done-today{background:linear-gradient(135deg,#FFD166,#FFA500);color:white}
+  .hunger-label{font-size:12px;font-weight:700;color:var(--sub);margin-bottom:4px;display:flex;justify-content:space-between}
+  .hunger-bar{height:12px;background:#F5F5F5;border-radius:12px;overflow:hidden;margin-bottom:6px}
+  .hunger-fill{height:100%;border-radius:12px;transition:width .6s ease,background .6s ease}
+  .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:14px}
+  .day-cell{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .day-cell .day-name{font-size:8px;color:var(--sub);font-weight:700}
+  .day-cell .day-icon{font-size:16px}
+  .day-cell.completed{background:linear-gradient(135deg,#FFE8EF,#FFD6E7)}
+  .day-cell.today{background:linear-gradient(135deg,#E8FFFA,#D0FFF0);border:2px solid var(--mint)}
+  .day-cell.future{background:#F5F5F5}
+  .day-cell.missed{background:#F0F0F0;opacity:.5}
+  .weekly-reward-card{background:linear-gradient(135deg,#FFF5C0,#FFE8EF);border-radius:18px;padding:14px;margin-bottom:10px;border:2px solid #FFD166;display:flex;align-items:center;gap:12px}
+  .weekly-reward-icon{font-size:36px}
+  .weekly-reward-info{flex:1}
+  .weekly-reward-title{font-size:13px;font-weight:800}
+  .weekly-reward-desc{font-size:11px;color:var(--sub);margin-top:2px}
+  .weekly-reward-prog{font-size:11px;color:var(--orange);font-weight:700;margin-top:5px}
+  .shop-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .shop-item{background:white;border-radius:16px;padding:14px 10px;text-align:center;cursor:pointer;transition:all .2s;border:2.5px solid transparent;box-shadow:0 3px 10px rgba(0,0,0,.05);position:relative}
+  .shop-item:hover{transform:translateY(-2px)}
+  .shop-item.locked{opacity:.5;cursor:not-allowed}
+  .shop-item.owned{border-color:var(--mint);background:#F0FFF8}
+  .shop-item .item-emoji{font-size:36px;margin-bottom:5px}
+  .shop-item .item-name{font-size:12px;font-weight:800}
+  .shop-item .item-price{font-size:11px;color:var(--orange);font-weight:700;margin-top:3px}
+  .shop-item .lock-badge{position:absolute;top:7px;right:7px;font-size:13px}
+  .shop-item .unlock-info{font-size:10px;color:var(--sub);margin-top:2px}
+  .wardrobe-section{margin-bottom:18px}
+  .wardrobe-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+  .wardrobe-item{background:white;border-radius:13px;padding:10px 6px;text-align:center;cursor:pointer;border:2.5px solid transparent;transition:all .2s;box-shadow:0 2px 7px rgba(0,0,0,.05)}
+  .wardrobe-item.equipped{border-color:var(--purple);background:#F5F0FF}
+  .wardrobe-item.locked{opacity:.4;cursor:not-allowed}
+  .wardrobe-item .item-emoji{font-size:26px}
+  .wardrobe-item .item-label{font-size:9px;color:var(--sub);margin-top:3px;font-weight:700}
+  .milestone-item{background:white;border-radius:16px;padding:14px;margin-bottom:9px;display:flex;align-items:center;gap:12px;box-shadow:0 3px 10px rgba(0,0,0,.05)}
+  .milestone-item.unlocked{border-left:4px solid var(--mint)}
+  .milestone-item.locked-ms{border-left:4px solid #E5E5E5;opacity:.7}
+  .milestone-item.current{border-left:4px solid var(--yellow);animation:glow 2s ease-in-out infinite}
+  .milestone-icon{font-size:32px;flex-shrink:0}
+  .milestone-info{flex:1}
+  .milestone-name{font-size:13px;font-weight:800}
+  .milestone-desc{font-size:11px;color:var(--sub);margin-top:2px}
+  .milestone-badge{font-size:18px}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
+  .modal-overlay.show{display:flex}
+  .modal-box{background:white;border-radius:26px 26px 0 0;padding:26px 22px 38px;width:100%;max-width:500px;animation:slideUp .3s ease}
+  .modal-title{font-size:19px;font-weight:900;text-align:center;margin-bottom:5px}
+  .modal-sub{font-size:12px;color:var(--sub);text-align:center;margin-bottom:22px}
+  .pin-display{display:flex;gap:11px;justify-content:center;margin-bottom:18px}
+  .pin-dot{width:46px;height:46px;border-radius:11px;background:#F5F5F5;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;transition:all .2s}
+  .pin-dot.filled{background:var(--pink);color:white}
+  .pin-dot.error{background:#FF4D4D;animation:shake .4s ease}
+  .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;max-width:250px;margin:0 auto 18px}
+  .num-btn{height:52px;border-radius:13px;border:none;background:#F5F5F5;font-size:19px;font-weight:800;cursor:pointer;font-family:inherit}
+  .num-btn:active{transform:scale(.92);background:#E5E5E5}
+  .num-btn.del{background:#FFE8EF;color:var(--pink)}
+  .num-btn.confirm-btn{background:linear-gradient(135deg,var(--mint),#00B384);color:white;grid-column:span 2}
+  .toast{position:fixed;top:76px;left:50%;transform:translateX(-50%);background:var(--text);color:white;padding:11px 22px;border-radius:18px;font-size:13px;font-weight:700;z-index:300;animation:pop .3s ease;white-space:nowrap;max-width:90vw;text-align:center}
+  .confetti-piece{position:fixed;width:9px;height:9px;border-radius:2px;animation:confetti-fall linear forwards;z-index:500;pointer-events:none}
+  .celebrate-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;align-items:center;justify-content:center}
+  .celebrate-overlay.show{display:flex;animation:fadeIn .3s ease}
+  .celebrate-box{background:white;border-radius:28px;padding:36px 28px;text-align:center;animation:pop .5s cubic-bezier(.34,1.56,.64,1);max-width:280px;width:90%}
+  .celebrate-icon{font-size:66px;margin-bottom:10px}
+  .celebrate-title{font-size:22px;font-weight:900;margin-bottom:5px}
+  .celebrate-desc{font-size:13px;color:var(--sub);margin-bottom:18px;line-height:1.6;white-space:pre-line}
+  .btn-close{background:linear-gradient(135deg,var(--pink),#FF6B9D);color:white;border:none;border-radius:14px;padding:12px 28px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit}
+  svg.pet-svg{overflow:visible}
+  .eye-blink{animation:blink 4s ease-in-out infinite;transform-origin:center}
 </style>
 </head>
 <body>
 
-<!-- SELECT PET SCREEN -->
 <div id="screen-select" class="screen active">
-  <div style="font-size:48px;margin-bottom:12px;">🌟</div>
-  <div class="select-title">欢迎来到作业乐园！</div>
-  <div class="select-sub">选一个你最喜欢的宠物，开始你们的冒险吧！</div>
-
+  <div style="font-size:44px;margin-bottom:10px">🌟</div>
+  <div class="select-title">欢迎来到作业宠物乐园！</div>
+  <div class="select-sub">选一个你最喜欢的小伙伴，一起冒险吧！</div>
   <div class="pet-grid">
     <div class="pet-option selected" data-pet="dog" onclick="selectPet('dog',this)">
-      <span class="pet-emoji">🐶</span>
-      <div class="pet-name">小狗狗</div>
-      <div class="pet-desc">活泼又可爱</div>
+      <div id="preview-dog"></div>
+      <div class="pet-name">小狗狗</div><div class="pet-desc">活泼又忠诚 🐾</div>
     </div>
     <div class="pet-option" data-pet="cat" onclick="selectPet('cat',this)">
-      <span class="pet-emoji">🐱</span>
-      <div class="pet-name">小猫猫</div>
-      <div class="pet-desc">优雅又神秘</div>
+      <div id="preview-cat"></div>
+      <div class="pet-name">小猫猫</div><div class="pet-desc">优雅又神秘 ✨</div>
     </div>
     <div class="pet-option" data-pet="dino" onclick="selectPet('dino',this)">
-      <span class="pet-emoji">🦕</span>
-      <div class="pet-name">小恐龙</div>
-      <div class="pet-desc">勇敢又霸气</div>
+      <div id="preview-dino"></div>
+      <div class="pet-name">小恐龙</div><div class="pet-desc">勇敢又萌萌 🌿</div>
     </div>
     <div class="pet-option" data-pet="bird" onclick="selectPet('bird',this)">
-      <span class="pet-emoji">🐦</span>
-      <div class="pet-name">小鸟鸟</div>
-      <div class="pet-desc">自由又快乐</div>
+      <div id="preview-bird"></div>
+      <div class="pet-name">小鸟鸟</div><div class="pet-desc">自由又快乐 🌈</div>
     </div>
   </div>
-
   <button class="btn-start" onclick="startGame()">✨ 出发！</button>
-  <div style="font-size:12px;color:#bbb;margin-top:16px;">已有存档？会自动读取哦</div>
+  <div style="font-size:11px;color:#bbb;margin-top:14px">已有存档？会自动读取哦</div>
 </div>
 
-<!-- MAIN SCREEN -->
 <div id="screen-main" class="screen">
-
-  <!-- Top bar -->
   <div class="topbar">
     <div class="topbar-left" id="pet-name-display">🐾 宠物乐园</div>
     <div class="topbar-coins">🪙 <span id="coin-display">0</span></div>
   </div>
 
-  <!-- Pet Room -->
   <div class="pet-room">
-    <div class="room-bg">
-      <div class="room-floor"></div>
-    </div>
+    <div class="room-floor"></div>
     <div id="room-furniture-left" class="room-furniture left"></div>
     <div id="room-furniture-right" class="room-furniture right"></div>
     <div class="pet-stage">
-      <div class="pet-display" id="pet-display" onclick="petTap()">
-        <span id="pet-emoji-main">🐶</span>
-        <span class="pet-outfit-hat" id="hat-display"></span>
-        <span class="pet-outfit-clothes" id="clothes-display"></span>
-        <span class="pet-outfit-acc" id="acc-display"></span>
+      <div class="pet-svg-wrap" id="pet-svg-wrap" onclick="petTap()">
+        <div id="pet-main-svg"></div>
+        <span class="pet-hat-layer" id="hat-display"></span>
+        <span class="pet-clothes-layer" id="clothes-display"></span>
+        <span class="pet-acc-layer" id="acc-display"></span>
       </div>
-      <div class="pet-speech" id="pet-speech">汪！今天要好好写作业哦！</div>
+      <div class="pet-speech" id="pet-speech">点我说话！</div>
     </div>
   </div>
 
-  <!-- Status -->
   <div class="status-bar">
-    <div class="stat-item">
-      <div class="stat-num" id="streak-display" style="color:var(--pink)">0</div>
-      <div class="stat-label">🔥 连续天</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num" id="total-display" style="color:var(--purple)">0</div>
-      <div class="stat-label">⭐ 累计完成</div>
-    </div>
-    <div class="stat-item">
-      <div class="stat-num" id="week-display" style="color:var(--mint)">0/7</div>
-      <div class="stat-label">📅 本周</div>
-    </div>
+    <div class="stat-item"><div class="stat-num" id="streak-display" style="color:var(--pink)">0</div><div class="stat-label">🔥 连续天</div></div>
+    <div class="stat-item"><div class="stat-num" id="total-display" style="color:var(--purple)">0</div><div class="stat-label">⭐ 累计天</div></div>
+    <div class="stat-item"><div class="stat-num" id="week-display" style="color:var(--mint)">0/7</div><div class="stat-label">📅 本周</div></div>
   </div>
 
-  <!-- Next unlock progress -->
   <div class="unlock-progress">
-    <div class="unlock-title">
-      <span>🎁 下一个解锁</span>
-      <span class="unlock-next" id="next-unlock-icon">🏠</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-bottom:6px;">
-      <span id="next-unlock-name">小房子</span>
-      <span id="next-unlock-progress-text">0/7天</span>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <span style="font-size:13px;font-weight:800">🎁 下一解锁：<span id="next-unlock-name"></span></span>
+      <span style="font-size:12px;color:var(--sub)" id="next-unlock-prog-text"></span>
     </div>
     <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
   </div>
 
-  <!-- Tab panels -->
   <div id="panel-homework" class="tab-panel active">
-    <div class="section-title">📚 今日作业喂食</div>
+    <div class="section-title">📚 今日作业</div>
     <div class="hw-card">
-      <div class="subject-row" id="row-chinese" onclick="toggleSubject('chinese')">
+      <div class="subject-row undone" id="row-chinese" onclick="toggleSubject('chinese')">
         <span class="subject-icon">📖</span>
-        <div class="subject-info">
-          <div class="subject-name" style="color:#FF8FAB">语文</div>
-          <div class="subject-reward">完成得 🪙+2 + 🍙饭团</div>
-        </div>
+        <div class="subject-info"><div class="subject-name" style="color:#FF8FAB">语文</div><div class="subject-reward" id="reward-chinese">完成得 🪙+2</div></div>
         <span class="subject-check" id="check-chinese">⬜</span>
       </div>
-      <div class="subject-row" id="row-math" onclick="toggleSubject('math')">
+      <div class="subject-row undone" id="row-math" onclick="toggleSubject('math')">
         <span class="subject-icon">🔢</span>
-        <div class="subject-info">
-          <div class="subject-name" style="color:#7EC8E3">数学</div>
-          <div class="subject-reward">完成得 🪙+2 + 🍖肉骨头</div>
-        </div>
+        <div class="subject-info"><div class="subject-name" style="color:#7EC8E3">数学</div><div class="subject-reward" id="reward-math">完成得 🪙+2</div></div>
         <span class="subject-check" id="check-math">⬜</span>
       </div>
-      <div class="subject-row" id="row-english" onclick="toggleSubject('english')">
+      <div class="subject-row undone" id="row-english" onclick="toggleSubject('english')">
         <span class="subject-icon">🌍</span>
-        <div class="subject-info">
-          <div class="subject-name" style="color:#B5EAD7">英语</div>
-          <div class="subject-reward">完成得 🪙+2 + 🧁小蛋糕</div>
-        </div>
+        <div class="subject-info"><div class="subject-name" style="color:#B5EAD7">英语</div><div class="subject-reward" id="reward-english">完成得 🪙+2</div></div>
         <span class="subject-check" id="check-english">⬜</span>
       </div>
     </div>
-    <button class="btn-confirm" id="btn-confirm" onclick="openParentModal()">请爸爸妈妈来确认！</button>
-
-    <!-- Today's reward preview -->
-    <div class="hw-card" style="margin-top:12px;text-align:center;">
-      <div style="font-size:13px;color:var(--sub);margin-bottom:10px;font-weight:700;">今天完成可以获得</div>
-      <div style="display:flex;gap:16px;justify-content:center;">
-        <div>
-          <div style="font-size:28px" id="today-reward-coins">🪙×0</div>
-          <div style="font-size:11px;color:var(--sub)">爱心币</div>
-        </div>
-        <div>
-          <div style="font-size:28px" id="today-reward-food">🍙🍖🧁</div>
-          <div style="font-size:11px;color:var(--sub)">食物</div>
-        </div>
-        <div>
-          <div style="font-size:28px" id="today-reward-bonus">⭐×1</div>
-          <div style="font-size:11px;color:var(--sub)">成就</div>
-        </div>
+    <div class="hw-card">
+      <div class="hunger-label"><span>🍽️ 宠物饱腹度</span><span id="hunger-text">饿着呢...</span></div>
+      <div class="hunger-bar"><div class="hunger-fill" id="hunger-fill" style="width:0%"></div></div>
+      <div style="font-size:11px;color:var(--sub);text-align:center" id="hunger-hint">完成1科喂饱33%，完成越多宠物越开心！</div>
+    </div>
+    <button class="btn-confirm notready" id="btn-confirm">先勾选完成的作业吧～</button>
+    <div class="hw-card" style="margin-top:10px;text-align:center">
+      <div style="font-size:12px;color:var(--sub);margin-bottom:8px;font-weight:700">今天完成后可以获得</div>
+      <div style="display:flex;gap:14px;justify-content:center">
+        <div><div style="font-size:22px" id="today-reward-coins">🪙×0</div><div style="font-size:10px;color:var(--sub)">爱心币</div></div>
+        <div><div style="font-size:22px" id="today-reward-food">—</div><div style="font-size:10px;color:var(--sub)">食物</div></div>
+        <div><div style="font-size:22px" id="today-reward-bonus">—</div><div style="font-size:10px;color:var(--sub)">奖励</div></div>
       </div>
     </div>
   </div>
 
   <div id="panel-week" class="tab-panel">
     <div class="section-title">📅 本周打卡</div>
-    <div class="hw-card">
-      <div class="week-grid" id="week-grid"></div>
-    </div>
-
+    <div class="hw-card"><div class="week-grid" id="week-grid"></div></div>
     <div class="section-title">🎁 本周奖励</div>
     <div id="weekly-rewards-list"></div>
   </div>
 
   <div id="panel-shop" class="tab-panel">
     <div class="section-title">🍽️ 美食商店</div>
-    <div style="font-size:12px;color:var(--sub);margin-bottom:12px;">用爱心币给宠物购买美食！</div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:10px">每种宠物口味不同，专属美食更好吃！</div>
     <div class="shop-grid" id="food-grid"></div>
-
-    <div class="section-title" style="margin-top:20px">🏠 房间装饰</div>
-    <div style="font-size:12px;color:var(--sub);margin-bottom:12px;">让宠物住得更舒适！</div>
+    <div class="section-title" style="margin-top:18px">🏠 房间装饰</div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:10px">让宠物住得更舒适！</div>
     <div class="shop-grid" id="room-grid"></div>
   </div>
 
   <div id="panel-wardrobe" class="tab-panel">
-    <div style="background:linear-gradient(135deg,#F5F0FF,#FFE8EF);border-radius:20px;padding:16px;margin-bottom:16px;text-align:center;">
-      <div style="font-size:48px" id="wardrobe-preview-pet">🐶</div>
-      <div style="font-size:24px;margin-top:-8px;" id="wardrobe-preview-outfit"></div>
-      <div style="font-size:12px;color:var(--sub);margin-top:6px;">点击装备可以穿戴/取下</div>
+    <div style="background:linear-gradient(135deg,#F5F0FF,#FFE8EF);border-radius:18px;padding:14px;margin-bottom:14px;text-align:center">
+      <div id="wardrobe-preview-svg" style="display:inline-block"></div>
+      <div style="font-size:22px;margin-top:-4px" id="wardrobe-preview-outfit"></div>
+      <div style="font-size:11px;color:var(--sub);margin-top:5px">点击装备可以穿戴/取下</div>
     </div>
-    <div class="wardrobe-section">
-      <div class="section-title">🎩 帽子</div>
-      <div class="wardrobe-grid" id="hat-grid"></div>
-    </div>
-    <div class="wardrobe-section">
-      <div class="section-title">👕 衣服</div>
-      <div class="wardrobe-grid" id="clothes-grid"></div>
-    </div>
-    <div class="wardrobe-section">
-      <div class="section-title">🎀 配件</div>
-      <div class="wardrobe-grid" id="acc-grid"></div>
-    </div>
+    <div class="wardrobe-section"><div class="section-title">🎩 帽子</div><div class="wardrobe-grid" id="hat-grid"></div></div>
+    <div class="wardrobe-section"><div class="section-title">👕 衣服</div><div class="wardrobe-grid" id="clothes-grid"></div></div>
+    <div class="wardrobe-section"><div class="section-title">🎀 配件</div><div class="wardrobe-grid" id="acc-grid"></div></div>
   </div>
 
   <div id="panel-milestones" class="tab-panel">
     <div class="section-title">🏆 成就里程碑</div>
-    <div style="font-size:12px;color:var(--sub);margin-bottom:16px;">坚持完成作业，解锁更多精彩！</div>
+    <div style="font-size:11px;color:var(--sub);margin-bottom:14px">坚持完成作业，解锁更多精彩！</div>
     <div id="milestone-list"></div>
   </div>
 
-  <!-- Nav tabs -->
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="switchTab('homework',this)">
-      <span class="tab-icon">📚</span>
-      <span class="tab-label">作业</span>
-    </button>
-    <button class="nav-tab" onclick="switchTab('week',this)">
-      <span class="tab-icon">📅</span>
-      <span class="tab-label">本周</span>
-    </button>
-    <button class="nav-tab" onclick="switchTab('shop',this)">
-      <span class="tab-icon">🍽️</span>
-      <span class="tab-label">商店</span>
-    </button>
-    <button class="nav-tab" onclick="switchTab('wardrobe',this)">
-      <span class="tab-icon">👗</span>
-      <span class="tab-label">衣橱</span>
-    </button>
-    <button class="nav-tab" onclick="switchTab('milestones',this)">
-      <span class="tab-icon">🏆</span>
-      <span class="tab-label">成就</span>
-    </button>
+    <button class="nav-tab active" onclick="switchTab('homework',this)"><span class="tab-icon">📚</span><span class="tab-label">作业</span></button>
+    <button class="nav-tab" onclick="switchTab('week',this)"><span class="tab-icon">📅</span><span class="tab-label">本周</span></button>
+    <button class="nav-tab" onclick="switchTab('shop',this)"><span class="tab-icon">🍽️</span><span class="tab-label">商店</span></button>
+    <button class="nav-tab" onclick="switchTab('wardrobe',this)"><span class="tab-icon">👗</span><span class="tab-label">衣橱</span></button>
+    <button class="nav-tab" onclick="switchTab('milestones',this)"><span class="tab-icon">🏆</span><span class="tab-label">成就</span></button>
   </div>
 </div>
 
-<!-- Parent Modal -->
 <div class="modal-overlay" id="parent-modal">
   <div class="modal-box">
     <div class="modal-title">🔐 家长确认</div>
-    <div class="modal-sub">请输入家长密码，确认作业完成</div>
+    <div class="modal-sub" id="modal-sub-text">请输入家长密码确认作业完成</div>
     <div class="pin-display">
-      <div class="pin-dot" id="dot-0"></div>
-      <div class="pin-dot" id="dot-1"></div>
-      <div class="pin-dot" id="dot-2"></div>
-      <div class="pin-dot" id="dot-3"></div>
+      <div class="pin-dot" id="dot-0"></div><div class="pin-dot" id="dot-1"></div>
+      <div class="pin-dot" id="dot-2"></div><div class="pin-dot" id="dot-3"></div>
     </div>
     <div class="numpad">
-      <button class="num-btn" onclick="pinInput('1')">1</button>
-      <button class="num-btn" onclick="pinInput('2')">2</button>
-      <button class="num-btn" onclick="pinInput('3')">3</button>
-      <button class="num-btn" onclick="pinInput('4')">4</button>
-      <button class="num-btn" onclick="pinInput('5')">5</button>
-      <button class="num-btn" onclick="pinInput('6')">6</button>
-      <button class="num-btn" onclick="pinInput('7')">7</button>
-      <button class="num-btn" onclick="pinInput('8')">8</button>
-      <button class="num-btn" onclick="pinInput('9')">9</button>
-      <button class="num-btn del" onclick="pinDelete()">⌫</button>
-      <button class="num-btn" onclick="pinInput('0')">0</button>
+      <button class="num-btn" onclick="pinInput('1')">1</button><button class="num-btn" onclick="pinInput('2')">2</button><button class="num-btn" onclick="pinInput('3')">3</button>
+      <button class="num-btn" onclick="pinInput('4')">4</button><button class="num-btn" onclick="pinInput('5')">5</button><button class="num-btn" onclick="pinInput('6')">6</button>
+      <button class="num-btn" onclick="pinInput('7')">7</button><button class="num-btn" onclick="pinInput('8')">8</button><button class="num-btn" onclick="pinInput('9')">9</button>
+      <button class="num-btn del" onclick="pinDelete()">⌫</button><button class="num-btn" onclick="pinInput('0')">0</button>
       <button class="num-btn confirm-btn" onclick="pinConfirm()">✓ 确认</button>
     </div>
-    <div style="text-align:center;font-size:12px;color:#bbb;">默认密码：1234 &nbsp;|&nbsp; <span style="color:var(--pink);cursor:pointer" onclick="closeModal()">取消</span></div>
+    <div style="text-align:center;font-size:11px;color:#bbb">默认密码：1234 &nbsp;|&nbsp; <span style="color:var(--pink);cursor:pointer" onclick="closeModal()">取消</span></div>
   </div>
 </div>
 
-<!-- Celebration overlay -->
 <div class="celebrate-overlay" id="celebrate-overlay">
   <div class="celebrate-box">
     <div class="celebrate-icon" id="cel-icon">🎉</div>
@@ -763,631 +322,604 @@
 </div>
 
 <script>
-// ===== DATA =====
+// ====== SVG PETS ======
+function makePet(type, sz, mood) {
+  const s = sz||100;
+  // shared eye shapes
+  const eyeHappy = `<path d="M-5,0 Q0,-6 5,0" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+  const eyeNormal = `<ellipse rx="4" ry="5" fill="#333"/><ellipse cx="1.2" cy="-1.5" rx="1.5" ry="1.5" fill="white"/>`;
+  const eyeSad = `<ellipse rx="4" ry="3.5" fill="#555"/><path d="M-6,-6 Q-4,-9 -2,-6" fill="none" stroke="#555" stroke-width="1.5"/>`;
+  const mHappy = `<path d="M-8,0 Q0,8 8,0" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+  const mSad = `<path d="M-6,0 Q0,-5 6,0" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round"/>`;
+  const mNormal = `<path d="M-6,0 Q0,4 6,0" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"/>`;
+  const isHappy = mood==='happy', isSad = mood==='veryhungry';
+  const eye = isHappy?eyeHappy:isSad?eyeSad:eyeNormal;
+  const mouth = isHappy?mHappy:isSad?mSad:mNormal;
+  const blush = isHappy?`<ellipse cx="-26" cy="46" rx="9" ry="6" fill="#FFB3C6" opacity="0.75"/><ellipse cx="26" cy="46" rx="9" ry="6" fill="#FFB3C6" opacity="0.75"/>`:'';
+  const cry = isSad?`<text x="0" y="-44" text-anchor="middle" font-size="16">😢</text>`:'';
+
+  if(type==='dog') {
+    const tailStyle = isHappy?`style="animation:tail-wag .5s ease-in-out infinite;transform-origin:28px 50px"`:'';
+    return `<svg width="${s}" height="${Math.round(s*1.35)}" viewBox="-50 -52 100 134" class="pet-svg">
+      <g ${tailStyle}><path d="M30,46 Q58,28 52,12 Q48,3 40,16 Q36,30 30,46" fill="#FFCC80"/></g>
+      <ellipse cx="0" cy="56" rx="32" ry="27" fill="#FFCC80"/>
+      <rect x="-27" y="72" width="13" height="21" rx="6.5" fill="#FFCC80"/><rect x="14" y="72" width="13" height="21" rx="6.5" fill="#FFCC80"/>
+      <ellipse cx="-20" cy="93" rx="9" ry="5.5" fill="#FFB74D"/><ellipse cx="20" cy="93" rx="9" ry="5.5" fill="#FFB74D"/>
+      <rect x="-37" y="50" width="12" height="20" rx="6" fill="#FFCC80"/><rect x="25" y="50" width="12" height="20" rx="6" fill="#FFCC80"/>
+      <ellipse cx="-31" cy="70" rx="8" ry="5" fill="#FFB74D"/><ellipse cx="31" cy="70" rx="8" ry="5" fill="#FFB74D"/>
+      <ellipse cx="0" cy="10" rx="36" ry="34" fill="#FFCC80"/>
+      <ellipse cx="-27" cy="-18" rx="14" ry="20" fill="#FFB74D" transform="rotate(-15,-27,-18)"/>
+      <ellipse cx="27" cy="-18" rx="14" ry="20" fill="#FFB74D" transform="rotate(15,27,-18)"/>
+      <ellipse cx="-26" cy="-17" rx="8" ry="13" fill="#FF8A65" opacity=".45" transform="rotate(-15,-26,-17)"/>
+      <ellipse cx="26" cy="-17" rx="8" ry="13" fill="#FF8A65" opacity=".45" transform="rotate(15,26,-17)"/>
+      <ellipse cx="0" cy="22" rx="18" ry="13" fill="#FFE0B2"/>
+      <ellipse cx="0" cy="16" rx="7" ry="5" fill="#5D4037"/>
+      <ellipse cx="-2" cy="14.5" rx="2.5" ry="1.5" fill="white" opacity=".6"/>
+      ${blush}
+      <g transform="translate(-16,5)"><g class="eye-blink">${eye}</g></g>
+      <g transform="translate(16,5)"><g class="eye-blink">${eye}</g></g>
+      <g transform="translate(0,26)">${mouth}</g>
+      ${cry}
+    </svg>`;
+  }
+  if(type==='cat') {
+    const tailStyle = isHappy?`style="animation:tail-wag .9s ease-in-out infinite;transform-origin:28px 52px"`:'';
+    const catBlush = isHappy?`<ellipse cx="-25" cy="42" rx="9" ry="6" fill="#F48FB1" opacity=".65"/><ellipse cx="25" cy="42" rx="9" ry="6" fill="#F48FB1" opacity=".65"/>`:'';
+    return `<svg width="${s}" height="${Math.round(s*1.35)}" viewBox="-50 -52 100 134" class="pet-svg">
+      <g ${tailStyle}><path d="M28,56 Q62,42 58,14 Q54,3 46,16 Q42,32 28,56" fill="#CE93D8"/><ellipse cx="50" cy="10" rx="7" ry="5" fill="#BA68C8"/></g>
+      <ellipse cx="0" cy="54" rx="30" ry="27" fill="#CE93D8"/>
+      <ellipse cx="0" cy="56" rx="18" ry="20" fill="#F3E5F5"/>
+      <rect x="-26" y="71" width="13" height="21" rx="6.5" fill="#CE93D8"/><rect x="13" y="71" width="13" height="21" rx="6.5" fill="#CE93D8"/>
+      <ellipse cx="-19" cy="92" rx="9" ry="5.5" fill="#BA68C8"/><ellipse cx="19" cy="92" rx="9" ry="5.5" fill="#BA68C8"/>
+      <rect x="-35" y="48" width="11" height="19" rx="5.5" fill="#CE93D8"/><rect x="24" y="48" width="11" height="19" rx="5.5" fill="#CE93D8"/>
+      <ellipse cx="-29" cy="67" rx="7" ry="5" fill="#BA68C8"/><ellipse cx="29" cy="67" rx="7" ry="5" fill="#BA68C8"/>
+      <ellipse cx="0" cy="8" rx="34" ry="32" fill="#CE93D8"/>
+      <polygon points="-34,-18 -20,-50 -8,-20" fill="#CE93D8"/>
+      <polygon points="34,-18 20,-50 8,-20" fill="#CE93D8"/>
+      <polygon points="-29,-20 -21,-42 -13,-22" fill="#F48FB1" opacity=".6"/>
+      <polygon points="29,-20 21,-42 13,-22" fill="#F48FB1" opacity=".6"/>
+      <ellipse cx="0" cy="18" rx="19" ry="15" fill="#F3E5F5"/>
+      <ellipse cx="-8" cy="22" rx="7" ry="5.5" fill="#EDE7F6"/><ellipse cx="8" cy="22" rx="7" ry="5.5" fill="#EDE7F6"/>
+      <path d="M-3,16 L3,16 L0,20Z" fill="#EC407A"/>
+      ${catBlush}
+      <line x1="-24" y1="20" x2="-10" y2="21" stroke="#888" stroke-width="1" opacity=".55"/>
+      <line x1="-24" y1="25" x2="-10" y2="25" stroke="#888" stroke-width="1" opacity=".55"/>
+      <line x1="24" y1="20" x2="10" y2="21" stroke="#888" stroke-width="1" opacity=".55"/>
+      <line x1="24" y1="25" x2="10" y2="25" stroke="#888" stroke-width="1" opacity=".55"/>
+      <g transform="translate(-15,4)"><g class="eye-blink">${eye}</g></g>
+      <g transform="translate(15,4)"><g class="eye-blink">${eye}</g></g>
+      <g transform="translate(0,26)">${mouth}</g>
+      ${cry}
+    </svg>`;
+  }
+  if(type==='dino') {
+    const dinoBlush = isHappy?`<ellipse cx="-22" cy="36" rx="8" ry="5" fill="#A5D6A7" opacity=".8"/><ellipse cx="22" cy="36" rx="8" ry="5" fill="#A5D6A7" opacity=".8"/>`:'';
+    return `<svg width="${s}" height="${Math.round(s*1.35)}" viewBox="-50 -58 100 134" class="pet-svg">
+      <path d="M28,56 Q65,56 70,76 Q72,86 60,83 Q50,76 28,66" fill="#81C784"/>
+      <ellipse cx="0" cy="52" rx="32" ry="30" fill="#81C784"/>
+      <ellipse cx="0" cy="54" rx="20" ry="22" fill="#C8E6C9"/>
+      <rect x="-24" y="72" width="15" height="24" rx="7.5" fill="#81C784"/><rect x="9" y="72" width="15" height="24" rx="7.5" fill="#81C784"/>
+      <ellipse cx="-16" cy="96" rx="11" ry="6" fill="#66BB6A"/><ellipse cx="16" cy="96" rx="11" ry="6" fill="#66BB6A"/>
+      <path d="M-30,42 Q-48,36 -44,52 Q-42,58 -32,55" fill="#81C784"/>
+      <path d="M30,42 Q48,36 44,52 Q42,58 32,55" fill="#81C784"/>
+      <ellipse cx="0" cy="6" rx="33" ry="30" fill="#81C784"/>
+      <path d="M-6,-24 L0,-40 L6,-24" fill="#66BB6A"/>
+      <path d="M-18,-20 L-12,-34 L-6,-20" fill="#66BB6A"/>
+      <path d="M6,-20 L12,-34 L18,-20" fill="#66BB6A"/>
+      <ellipse cx="0" cy="18" rx="20" ry="13" fill="#A5D6A7"/>
+      <ellipse cx="-6" cy="13" rx="3" ry="2" fill="#388E3C"/><ellipse cx="6" cy="13" rx="3" ry="2" fill="#388E3C"/>
+      ${dinoBlush}
+      <g transform="translate(-15,2)"><g class="eye-blink">${eye}</g></g>
+      <g transform="translate(15,2)"><g class="eye-blink">${eye}</g></g>
+      <g transform="translate(0,22)">${mouth}</g>
+      ${cry}
+    </svg>`;
+  }
+  if(type==='bird') {
+    const wingStyle = isHappy?`style="animation:wing-flap .4s ease-in-out infinite;transform-origin:-28px 44px"`:'';
+    const birdBlush = isHappy?`<ellipse cx="-20" cy="8" rx="7" ry="5" fill="#FF8A65" opacity=".7"/><ellipse cx="20" cy="8" rx="7" ry="5" fill="#FF8A65" opacity=".7"/>`:'';
+    const birdEyeH = `<path d="M-4,0 Q0,-5 4,0" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
+    const birdEyeN = `<circle r="4" fill="#1A237E"/><circle cx="1.2" cy="-1" r="1.5" fill="white"/>`;
+    const birdEyeS = `<circle r="3.5" fill="#555"/><path d="M-5,-5 Q-3,-8 -1,-5" fill="none" stroke="#555" stroke-width="1.5"/>`;
+    const bEye = isHappy?birdEyeH:isSad?birdEyeS:birdEyeN;
+    const tailAnim = isHappy?`style="animation:tail-wag .7s ease-in-out infinite;transform-origin:0 72px"`:'';
+    return `<svg width="${s}" height="${Math.round(s*1.35)}" viewBox="-50 -52 100 140" class="pet-svg">
+      <g ${tailAnim}>
+        <path d="M-12,72 Q-22,96 -10,102 Q0,107 6,90 Q12,102 22,100 Q30,96 20,78 Z" fill="#29B6F6"/>
+        <path d="M0,72 Q4,88 0,100" fill="#0288D1" opacity=".5" stroke="none"/>
+      </g>
+      <ellipse cx="0" cy="50" rx="28" ry="30" fill="#4FC3F7"/>
+      <ellipse cx="0" cy="55" rx="17" ry="20" fill="#E1F5FE"/>
+      <g ${wingStyle}>
+        <path d="M-28,42 Q-64,28 -66,60 Q-64,76 -42,68 Q-32,60 -28,55Z" fill="#29B6F6"/>
+        <path d="M-52,40 Q-66,33 -68,50" fill="none" stroke="#0288D1" stroke-width="1.5" opacity=".6"/>
+        <path d="M-42,35 Q-58,26 -60,44" fill="none" stroke="#0288D1" stroke-width="1.5" opacity=".6"/>
+      </g>
+      <g style="transform:scaleX(-1)" ${wingStyle}>
+        <path d="M-28,42 Q-64,28 -66,60 Q-64,76 -42,68 Q-32,60 -28,55Z" fill="#29B6F6"/>
+        <path d="M-52,40 Q-66,33 -68,50" fill="none" stroke="#0288D1" stroke-width="1.5" opacity=".6"/>
+        <path d="M-42,35 Q-58,26 -60,44" fill="none" stroke="#0288D1" stroke-width="1.5" opacity=".6"/>
+      </g>
+      <g transform="translate(-12,78)">
+        <line x1="0" y1="0" x2="-11" y2="16" stroke="#FF8F00" stroke-width="3" stroke-linecap="round"/>
+        <line x1="0" y1="0" x2="0" y2="18" stroke="#FF8F00" stroke-width="3" stroke-linecap="round"/>
+        <line x1="0" y1="0" x2="11" y2="16" stroke="#FF8F00" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(12,78)">
+        <line x1="0" y1="0" x2="-11" y2="16" stroke="#FF8F00" stroke-width="3" stroke-linecap="round"/>
+        <line x1="0" y1="0" x2="0" y2="18" stroke="#FF8F00" stroke-width="3" stroke-linecap="round"/>
+        <line x1="0" y1="0" x2="11" y2="16" stroke="#FF8F00" stroke-width="3" stroke-linecap="round"/>
+      </g>
+      <ellipse cx="0" cy="5" rx="30" ry="28" fill="#4FC3F7"/>
+      <path d="M-8,-22 Q-10,-44 -4,-40 Q0,-50 4,-40 Q10,-44 8,-22" fill="#0288D1"/>
+      <path d="M-9,14 L0,22 L9,14" fill="#FF8F00"/>
+      <line x1="-9" y1="14" x2="9" y2="14" stroke="#E65100" stroke-width="1.5"/>
+      ${birdBlush}
+      <circle cx="-14" cy="2" r="8" fill="white"/><circle cx="14" cy="2" r="8" fill="white"/>
+      <g transform="translate(-14,2)"><g class="eye-blink">${bEye}</g></g>
+      <g transform="translate(14,2)"><g class="eye-blink">${bEye}</g></g>
+      ${cry}
+    </svg>`;
+  }
+  return '';
+}
+
+// ====== DATA ======
 const PETS = {
-  dog:  { name:'小狗狗', emoji:'🐶', speech:['汪！好好写作业哦！','汪汪！我饿了~','你最棒啦！汪！','摸摸我嘛~'] },
-  cat:  { name:'小猫猫', emoji:'🐱', speech:['喵...写作业啦','喵喵，我要吃鱼~','喵！你做到了！','喵～蹭蹭你'] },
-  dino: { name:'小恐龙', emoji:'🦕', speech:['嗷！勇敢写作业！','嗷嗷，饿了饿了','嗷！你超厉害！','来嘛来嘛~'] },
-  bird: { name:'小鸟鸟', emoji:'🐦', speech:['啾啾！写作业啦~','啾~给我吃虫虫','啾啾！飞起来啦！','啾~摸摸我'] },
+  dog:  {name:'小狗狗',speech:['汪！好好写作业哦！','汪汪！我好饿~','你最棒啦！汪！','汪～摸摸我嘛','汪！一起加油！']},
+  cat:  {name:'小猫猫',speech:['喵...写作业啦~','喵，我要吃鱼~','喵！你做到了！','喵～蹭蹭你','喵呜！加油！']},
+  dino: {name:'小恐龙',speech:['嗷！勇敢写作业！','嗷嗷，饿了饿了~','嗷！你超厉害！','嗷～来嘛来嘛','嗷！冲冲冲！']},
+  bird: {name:'小鸟鸟',speech:['啾啾！写作业啦~','啾～我要吃虫虫','啾啾！飞起来啦！','啾～摸摸我','啾！加油加油！']},
 };
 
-const MILESTONES = [
-  { days:3,   icon:'🍪', name:'饼干达人',   desc:'连续3天完成作业！',       reward:'解锁【草莓蛋糕】食物' },
-  { days:7,   icon:'🏠', name:'小房子',     desc:'累计7天！宠物有家啦',     reward:'解锁【温馨小屋】房间装饰' },
-  { days:14,  icon:'🎩', name:'时尚达人',   desc:'累计14天！可以打扮啦',    reward:'解锁【魔法帽子】装备' },
-  { days:21,  icon:'🍕', name:'美食家',     desc:'累计21天！美食解锁',      reward:'解锁【豪华料理】系列食物' },
-  { days:30,  icon:'🐱', name:'新朋友',     desc:'累计30天！新宠物解锁',    reward:'解锁第2只宠物' },
-  { days:45,  icon:'🛋️', name:'豪华客厅',   desc:'累计45天！房间升级',      reward:'解锁【舒适沙发+地毯】' },
-  { days:60,  icon:'🦕', name:'恐龙驯服师', desc:'累计60天！超级厉害',      reward:'解锁第3只宠物' },
-  { days:75,  icon:'✨', name:'闪耀之星',   desc:'累计75天！获得光芒',      reward:'解锁【彩虹特效皮肤】' },
-  { days:90,  icon:'🐦', name:'自由飞翔',   desc:'累计90天！毕业啦！',      reward:'解锁第4只宠物 + 毕业勋章' },
+const PET_FOODS = {
+  dog:{
+    subjects:{chinese:'🍙',math:'🍖',english:'🦴'},
+    shop:[
+      {id:'d1',emoji:'🍙',name:'香喷饭团',price:0,unlock:0,desc:'语文完成赠送'},
+      {id:'d2',emoji:'🍖',name:'肉骨头',price:0,unlock:0,desc:'数学完成赠送'},
+      {id:'d3',emoji:'🦴',name:'磨牙棒',price:0,unlock:0,desc:'英语完成赠送'},
+      {id:'d4',emoji:'🍪',name:'狗狗饼干',price:5,unlock:0,desc:'汪！超爱！'},
+      {id:'d5',emoji:'🥩',name:'牛排大餐',price:12,unlock:0,desc:'豪华美食！'},
+      {id:'d6',emoji:'🎂',name:'生日蛋糕',price:20,unlock:21,desc:'21天解锁'},
+      {id:'d7',emoji:'🌭',name:'热狗堡',price:15,unlock:30,desc:'30天解锁'},
+    ]
+  },
+  cat:{
+    subjects:{chinese:'🐟',math:'🍣',english:'🥛'},
+    shop:[
+      {id:'c1',emoji:'🐟',name:'烤小鱼',price:0,unlock:0,desc:'语文完成赠送'},
+      {id:'c2',emoji:'🍣',name:'鱼肉寿司',price:0,unlock:0,desc:'数学完成赠送'},
+      {id:'c3',emoji:'🥛',name:'香浓牛奶',price:0,unlock:0,desc:'英语完成赠送'},
+      {id:'c4',emoji:'🦐',name:'鲜虾仁',price:5,unlock:0,desc:'喵！最爱！'},
+      {id:'c5',emoji:'🐠',name:'金枪鱼罐',price:10,unlock:0,desc:'高级猫粮！'},
+      {id:'c6',emoji:'🍰',name:'奶油蛋糕',price:18,unlock:21,desc:'21天解锁'},
+      {id:'c7',emoji:'🧁',name:'马卡龙',price:15,unlock:30,desc:'30天解锁'},
+    ]
+  },
+  dino:{
+    subjects:{chinese:'🌿',math:'🫐',english:'🍉'},
+    shop:[
+      {id:'n1',emoji:'🌿',name:'嫩叶草',price:0,unlock:0,desc:'语文完成赠送'},
+      {id:'n2',emoji:'🫐',name:'蓝莓果',price:0,unlock:0,desc:'数学完成赠送'},
+      {id:'n3',emoji:'🍉',name:'大西瓜',price:0,unlock:0,desc:'英语完成赠送'},
+      {id:'n4',emoji:'🍄',name:'神奇蘑菇',price:5,unlock:0,desc:'史前美食！'},
+      {id:'n5',emoji:'🌵',name:'多汁仙人掌',price:8,unlock:0,desc:'沙漠风味！'},
+      {id:'n6',emoji:'🥚',name:'恐龙蛋',price:18,unlock:21,desc:'21天解锁'},
+      {id:'n7',emoji:'🪴',name:'珍稀植物',price:15,unlock:30,desc:'30天解锁'},
+    ]
+  },
+  bird:{
+    subjects:{chinese:'🐛',math:'🌾',english:'🍇'},
+    shop:[
+      {id:'b1',emoji:'🐛',name:'鲜美小虫',price:0,unlock:0,desc:'语文完成赠送'},
+      {id:'b2',emoji:'🌾',name:'谷物种子',price:0,unlock:0,desc:'数学完成赠送'},
+      {id:'b3',emoji:'🍇',name:'甜葡萄',price:0,unlock:0,desc:'英语完成赠送'},
+      {id:'b4',emoji:'🦋',name:'彩色蝴蝶',price:5,unlock:0,desc:'飞来的美食！'},
+      {id:'b5',emoji:'🍓',name:'草莓果实',price:8,unlock:0,desc:'酸甜可口！'},
+      {id:'b6',emoji:'🌸',name:'花蜜',price:15,unlock:21,desc:'21天解锁'},
+      {id:'b7',emoji:'🫘',name:'坚果大餐',price:12,unlock:30,desc:'30天解锁'},
+    ]
+  },
+};
+
+const MILESTONES=[
+  {days:3,icon:'🍪',name:'饼干达人',desc:'累计3天完成！',reward:'解锁高级食物'},
+  {days:7,icon:'🏠',name:'小窝出现啦',desc:'累计7天！有家啦',reward:'解锁宠物小屋'},
+  {days:14,icon:'🎩',name:'时尚达人',desc:'累计14天！打扮起来',reward:'解锁魔法帽+领结'},
+  {days:21,icon:'🍕',name:'美食家',desc:'累计21天！美食解锁',reward:'解锁豪华食物系列'},
+  {days:30,icon:'🐾',name:'新朋友',desc:'累计30天！新宠物来啦',reward:'解锁第2只宠物+王冠'},
+  {days:45,icon:'🛋️',name:'豪华客厅',desc:'累计45天！房间升级',reward:'解锁沙发+地毯'},
+  {days:60,icon:'🦕',name:'恐龙驯服师',desc:'累计60天！超级厉害',reward:'解锁第3只宠物+星装'},
+  {days:75,icon:'✨',name:'闪耀之星',desc:'累计75天！光芒万丈',reward:'解锁彩虹配件'},
+  {days:90,icon:'🎓',name:'毕业啦！',desc:'累计90天！你是冠军！',reward:'解锁第4只宠物+毕业帽'},
 ];
-
-const FOODS = [
-  { id:'rice',   emoji:'🍙', name:'饭团',     price:0,  unlock:0,  desc:'基础食物，每天都有！' },
-  { id:'bone',   emoji:'🍖', name:'肉骨头',   price:0,  unlock:0,  desc:'基础食物，每天都有！' },
-  { id:'cake',   emoji:'🧁', name:'小蛋糕',   price:0,  unlock:0,  desc:'基础食物，每天都有！' },
-  { id:'fish',   emoji:'🐟', name:'烤小鱼',   price:5,  unlock:0,  desc:'宠物超爱！' },
-  { id:'cookie', emoji:'🍪', name:'曲奇饼干', price:5,  unlock:0,  desc:'香脆好吃！' },
-  { id:'stcake', emoji:'🍰', name:'草莓蛋糕', price:10, unlock:3,  desc:'达成3天解锁！' },
-  { id:'pizza',  emoji:'🍕', name:'迷你披萨', price:12, unlock:21, desc:'达成21天解锁！' },
-  { id:'sushi',  emoji:'🍱', name:'精致寿司', price:15, unlock:21, desc:'达成21天解锁！' },
-  { id:'steak',  emoji:'🥩', name:'牛排大餐', price:20, unlock:21, desc:'达成21天解锁！' },
-  { id:'special',emoji:'🎂', name:'生日蛋糕', price:30, unlock:30, desc:'达成30天解锁！' },
+const ROOM_ITEMS=[
+  {id:'house',emoji:'🏠',name:'温馨小屋',price:0,unlock:7,slot:'left',desc:'7天自动获得！'},
+  {id:'flower',emoji:'🌸',name:'小花盆',price:8,unlock:14,slot:'left',desc:'14天解锁'},
+  {id:'lamp',emoji:'🪔',name:'暖心台灯',price:8,unlock:14,slot:'right',desc:'14天解锁'},
+  {id:'sofa',emoji:'🛋️',name:'舒适沙发',price:15,unlock:45,slot:'left',desc:'45天解锁'},
+  {id:'carpet',emoji:'🪄',name:'魔法地毯',price:12,unlock:45,slot:'right',desc:'45天解锁'},
+  {id:'trophy',emoji:'🏆',name:'荣耀奖杯',price:25,unlock:60,slot:'right',desc:'60天解锁'},
 ];
-
-const ROOM_ITEMS = [
-  { id:'house',  emoji:'🏠', name:'温馨小屋',  price:0,  unlock:7,  slot:'bg',    desc:'7天解锁！' },
-  { id:'sofa',   emoji:'🛋️', name:'舒适沙发',  price:15, unlock:45, slot:'left',  desc:'45天解锁！' },
-  { id:'carpet', emoji:'🪄', name:'魔法地毯',  price:12, unlock:45, slot:'right', desc:'45天解锁！' },
-  { id:'flower', emoji:'🌸', name:'小花盆',    price:8,  unlock:14, slot:'left',  desc:'14天解锁！' },
-  { id:'lamp',   emoji:'🪔', name:'暖心台灯',  price:8,  unlock:14, slot:'right', desc:'14天解锁！' },
-  { id:'trophy', emoji:'🏆', name:'荣耀奖杯',  price:25, unlock:60, slot:'right', desc:'60天解锁！' },
+const HATS=[
+  {id:'none',emoji:'',name:'不戴',unlock:0},
+  {id:'cap',emoji:'🧢',name:'棒球帽',unlock:0},
+  {id:'magic',emoji:'🎩',name:'魔法帽',unlock:14},
+  {id:'crown',emoji:'👑',name:'王冠',unlock:30},
+  {id:'santa',emoji:'🎅',name:'圣诞帽',unlock:45},
+  {id:'grad',emoji:'🎓',name:'毕业帽',unlock:90},
 ];
-
-const HATS = [
-  { id:'none',    emoji:'',   name:'不戴',   unlock:0  },
-  { id:'cap',     emoji:'🧢', name:'棒球帽', unlock:0  },
-  { id:'magic',   emoji:'🎩', name:'魔法帽', unlock:14 },
-  { id:'crown',   emoji:'👑', name:'王冠',   unlock:30 },
-  { id:'santa',   emoji:'🎅', name:'圣诞帽', unlock:45 },
-  { id:'grad',    emoji:'🎓', name:'毕业帽', unlock:90 },
+const CLOTHES=[
+  {id:'none',emoji:'',name:'不穿',unlock:0},
+  {id:'ribbon',emoji:'🎀',name:'蝴蝶结',unlock:0},
+  {id:'bow',emoji:'👔',name:'领结',unlock:14},
+  {id:'cape',emoji:'🦸',name:'超人披风',unlock:30},
+  {id:'star',emoji:'⭐',name:'星星装',unlock:60},
 ];
-
-const CLOTHES = [
-  { id:'none',    emoji:'',   name:'不穿',   unlock:0  },
-  { id:'ribbon',  emoji:'🎀', name:'蝴蝶结', unlock:0  },
-  { id:'bow',     emoji:'👔', name:'领结',   unlock:14 },
-  { id:'cape',    emoji:'🦸', name:'超人披风',unlock:30 },
-  { id:'star',    emoji:'⭐', name:'星星装',  unlock:60 },
+const ACCS=[
+  {id:'none',emoji:'',name:'不戴',unlock:0},
+  {id:'glasses',emoji:'👓',name:'眼镜',unlock:0},
+  {id:'heart',emoji:'💕',name:'爱心',unlock:7},
+  {id:'rainbow',emoji:'🌈',name:'彩虹',unlock:75},
+  {id:'medal',emoji:'🏅',name:'勋章',unlock:90},
 ];
-
-const ACCS = [
-  { id:'none',    emoji:'',   name:'不戴',   unlock:0  },
-  { id:'glasses', emoji:'👓', name:'眼镜',   unlock:0  },
-  { id:'heart',   emoji:'💕', name:'爱心',   unlock:7  },
-  { id:'rainbow', emoji:'🌈', name:'彩虹',   unlock:75 },
-  { id:'medal',   emoji:'🏅', name:'勋章',   unlock:90 },
+const WEEKLY_REWARDS=[
+  {days:3,icon:'🎁',title:'迷你宝箱',desc:'本周完成3天获得',reward:'食物×2 + 🪙×5'},
+  {days:5,icon:'📦',title:'普通宝箱',desc:'本周完成5天获得',reward:'装备碎片 + 🪙×10'},
+  {days:7,icon:'💎',title:'黄金宝箱',desc:'本周全勤！',reward:'稀有皮肤 + 🪙×20'},
 ];
+const PIN='1234';
+const today=new Date().toISOString().slice(0,10);
 
-const WEEKLY_REWARDS = [
-  { days:3, icon:'🎁', title:'迷你宝箱', desc:'本周完成3天获得', reward:'随机食物×2 + 🪙×5' },
-  { days:5, icon:'📦', title:'普通宝箱', desc:'本周完成5天获得', reward:'随机装备碎片 + 🪙×10' },
-  { days:7, icon:'💎', title:'黄金宝箱', desc:'本周全勤获得！！', reward:'稀有皮肤/衣服 + 🪙×20' },
-];
-
-const PIN = '1234';
-
-// ===== STATE =====
-const today = new Date().toISOString().slice(0,10);
-const dayOfWeek = new Date().getDay(); // 0=Sun
-
-function getWeekStart() {
-  const d = new Date();
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(d.setDate(diff)).toISOString().slice(0,10);
+function getWeekStart(){
+  const d=new Date(),day=d.getDay();
+  const nd=new Date(d);nd.setDate(d.getDate()-day+(day===0?-6:1));
+  return nd.toISOString().slice(0,10);
 }
-
-function defaultState() {
-  return {
-    pet: 'dog',
-    coins: 10,
-    streak: 0,
-    totalDays: 0,
-    lastDate: null,
-    todayDate: today,
-    todaySubjects: { chinese: false, math: false, english: false },
-    todayConfirmed: false,
-    weekStart: getWeekStart(),
-    weekDays: [],
-    hat: 'none',
-    clothes: 'none',
-    acc: 'none',
-    ownedHats: ['none','cap'],
-    ownedClothes: ['none','ribbon'],
-    ownedAccs: ['none','glasses'],
-    ownedFoods: ['rice','bone','cake','fish','cookie'],
-    ownedRoom: [],
-    placedRoom: { left: null, right: null },
-    history: [],
-    weeklyClaimedBoxes: [],
-  };
+function defaultState(){
+  return{pet:'dog',coins:10,streak:0,totalDays:0,lastDate:null,
+    todayDate:today,todaySubjects:{chinese:false,math:false,english:false},todayConfirmed:false,
+    weekStart:getWeekStart(),weekDays:[],hat:'none',clothes:'none',acc:'none',
+    ownedHats:['none','cap'],ownedClothes:['none','ribbon'],ownedAccs:['none','glasses'],
+    ownedRoom:[],placedRoom:{left:null,right:null},weeklyClaimedBoxes:[]};
 }
-
-let S = (() => {
-  try {
-    const raw = localStorage.getItem('pet_homework_v3');
-    if (raw) {
-      const loaded = JSON.parse(raw);
-      // New day reset
-      if (loaded.todayDate !== today) {
-        const wasConsecutive = loaded.lastDate === new Date(new Date(today).getTime() - 86400000).toISOString().slice(0,10);
-        loaded.todayDate = today;
-        loaded.todaySubjects = { chinese: false, math: false, english: false };
-        loaded.todayConfirmed = false;
-        loaded.streak = wasConsecutive ? loaded.streak : 0;
+let S=(()=>{
+  try{
+    const raw=localStorage.getItem('pet_hw_v4');
+    if(raw){
+      const d=JSON.parse(raw);
+      if(d.todayDate!==today){
+        const yest=new Date(new Date(today).getTime()-86400000).toISOString().slice(0,10);
+        d.todayDate=today;d.todaySubjects={chinese:false,math:false,english:false};
+        d.todayConfirmed=false;d.streak=d.lastDate===yest?d.streak:0;
       }
-      // New week reset
-      const newWeekStart = getWeekStart();
-      if (loaded.weekStart !== newWeekStart) {
-        loaded.weekStart = newWeekStart;
-        loaded.weekDays = [];
-        loaded.weeklyClaimedBoxes = [];
-      }
-      return loaded;
+      const ws=getWeekStart();
+      if(d.weekStart!==ws){d.weekStart=ws;d.weekDays=[];d.weeklyClaimedBoxes=[];}
+      return d;
     }
-  } catch(e) {}
+  }catch(e){}
   return defaultState();
 })();
+let pinValue='';
+function save(){localStorage.setItem('pet_hw_v4',JSON.stringify(S));}
 
-let pinValue = '';
-
-function save() {
-  localStorage.setItem('pet_homework_v3', JSON.stringify(S));
+// ====== SELECT ======
+function selectPet(pet,el){
+  document.querySelectorAll('.pet-option').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');S.pet=pet;
 }
-
-// ===== SELECT PET =====
-function selectPet(pet, el) {
-  document.querySelectorAll('.pet-option').forEach(e => e.classList.remove('selected'));
-  el.classList.add('selected');
-  S.pet = pet;
-}
-
-function startGame() {
+function startGame(){
   save();
   document.getElementById('screen-select').classList.remove('active');
   document.getElementById('screen-main').classList.add('active');
   initMain();
 }
 
-// ===== MAIN INIT =====
-function initMain() {
-  updateAll();
-  startSpeechLoop();
+// ====== MAIN ======
+function initMain(){updateAll();startSpeechLoop();}
+function updateAll(){
+  updatePetDisplay();updateStats();updateHomework();
+  updateWeekGrid();updateShop();updateWardrobe();
+  updateMilestones();updateUnlockProgress();updateWeeklyRewards();updateRoom();
 }
-
-function updateAll() {
-  updatePet();
-  updateStats();
-  updateHomework();
-  updateWeekGrid();
-  updateShop();
-  updateWardrobe();
-  updateMilestones();
-  updateUnlockProgress();
-  updateWeeklyRewards();
-  updateRoom();
+function getMood(){
+  const c=completedCount();
+  if(S.todayConfirmed||c===3)return'happy';
+  if(c===0)return'veryhungry';
+  return'normal';
 }
-
-function updatePet() {
-  const p = PETS[S.pet];
-  document.getElementById('pet-name-display').textContent = '🐾 ' + p.name;
-  document.getElementById('pet-emoji-main').textContent = p.emoji;
-  document.getElementById('coin-display').textContent = S.coins;
-  // Outfit
-  const hObj = HATS.find(h => h.id === S.hat);
-  const cObj = CLOTHES.find(c => c.id === S.clothes);
-  const aObj = ACCS.find(a => a.id === S.acc);
-  document.getElementById('hat-display').textContent = hObj ? hObj.emoji : '';
-  document.getElementById('clothes-display').textContent = cObj ? cObj.emoji : '';
-  document.getElementById('acc-display').textContent = aObj ? aObj.emoji : '';
-  // Pet animation
-  const petEl = document.getElementById('pet-display');
-  petEl.classList.remove('anim-bounce','anim-wiggle','anim-float','anim-heartbeat');
-  if (S.todayConfirmed) petEl.classList.add('anim-bounce');
-  else if (completedCount() === 0) petEl.classList.add('anim-float');
-  else petEl.classList.add('anim-wiggle');
-  // Wardrobe preview
-  document.getElementById('wardrobe-preview-pet').textContent = p.emoji;
-  document.getElementById('wardrobe-preview-outfit').textContent =
-    (hObj?.emoji||'') + (cObj?.emoji||'') + (aObj?.emoji||'');
+function updatePetDisplay(){
+  const mood=getMood();
+  document.getElementById('pet-main-svg').innerHTML=makePet(S.pet,110,mood);
+  document.getElementById('pet-name-display').textContent='🐾 '+PETS[S.pet].name;
+  document.getElementById('coin-display').textContent=S.coins;
+  const h=HATS.find(x=>x.id===S.hat),c2=CLOTHES.find(x=>x.id===S.clothes),a=ACCS.find(x=>x.id===S.acc);
+  document.getElementById('hat-display').textContent=h?.emoji||'';
+  document.getElementById('clothes-display').textContent=c2?.emoji||'';
+  document.getElementById('acc-display').textContent=a?.emoji||'';
+  document.getElementById('wardrobe-preview-svg').innerHTML=makePet(S.pet,80,'happy');
+  document.getElementById('wardrobe-preview-outfit').textContent=(h?.emoji||'')+(c2?.emoji||'')+(a?.emoji||'');
 }
-
-function updateStats() {
-  document.getElementById('streak-display').textContent = S.streak;
-  document.getElementById('total-display').textContent = S.totalDays;
-  document.getElementById('week-display').textContent = S.weekDays.length + '/7';
-  document.getElementById('coin-display').textContent = S.coins;
+function updateStats(){
+  document.getElementById('streak-display').textContent=S.streak;
+  document.getElementById('total-display').textContent=S.totalDays;
+  document.getElementById('week-display').textContent=S.weekDays.length+'/7';
+  document.getElementById('coin-display').textContent=S.coins;
 }
-
-function updateRoom() {
-  document.getElementById('room-furniture-left').textContent = (() => {
-    const id = S.placedRoom.left;
-    if (!id) return '';
-    const item = ROOM_ITEMS.find(r => r.id === id);
-    return item ? item.emoji : '';
-  })();
-  document.getElementById('room-furniture-right').textContent = (() => {
-    const id = S.placedRoom.right;
-    if (!id) return '';
-    const item = ROOM_ITEMS.find(r => r.id === id);
-    return item ? item.emoji : '';
-  })();
+function updateRoom(){
+  document.getElementById('room-furniture-left').textContent=S.placedRoom.left?ROOM_ITEMS.find(r=>r.id===S.placedRoom.left)?.emoji||'':'';
+  document.getElementById('room-furniture-right').textContent=S.placedRoom.right?ROOM_ITEMS.find(r=>r.id===S.placedRoom.right)?.emoji||'':'';
 }
+function completedCount(){return Object.values(S.todaySubjects).filter(Boolean).length;}
 
-function completedCount() {
-  return Object.values(S.todaySubjects).filter(Boolean).length;
-}
-
-function updateHomework() {
-  const subjects = ['chinese','math','english'];
-  const rows = { chinese:'undone', math:'undone', english:'undone' };
-  const checks = { chinese:'⬜', math:'⬜', english:'⬜' };
-  subjects.forEach(s => {
-    if (S.todaySubjects[s]) {
-      rows[s] = 'done';
-      checks[s] = '✅';
-    }
-    document.getElementById('row-' + s).className = 'subject-row ' + rows[s];
-    document.getElementById('check-' + s).textContent = checks[s];
-    // Disable if confirmed
-    if (S.todayConfirmed) {
-      document.getElementById('row-' + s).style.cursor = 'default';
-    }
+function updateHomework(){
+  const sf=PET_FOODS[S.pet]?.subjects||PET_FOODS.dog.subjects;
+  ['chinese','math','english'].forEach(sub=>{
+    const done=S.todaySubjects[sub];
+    document.getElementById('row-'+sub).className='subject-row '+(done?'done':'undone');
+    document.getElementById('check-'+sub).textContent=done?'✅':'⬜';
+    document.getElementById('reward-'+sub).textContent=`完成得 🪙+2 + ${sf[sub]}`;
+    document.getElementById('row-'+sub).style.cursor=S.todayConfirmed?'default':'pointer';
   });
-  const count = completedCount();
-  const btn = document.getElementById('btn-confirm');
-  if (S.todayConfirmed) {
-    btn.className = 'btn-confirm done-today';
-    btn.textContent = '🎉 今天作业全部完成啦！';
-    btn.onclick = null;
-  } else if (count === 3) {
-    btn.className = 'btn-confirm ready';
-    btn.textContent = '🐾 叫爸爸/妈妈来确认！';
-    btn.onclick = openParentModal;
-  } else {
-    btn.className = 'btn-confirm notready';
-    btn.textContent = `还差 ${3 - count} 科才能让宠物吃饱哦`;
-    btn.onclick = null;
+  const count=completedCount();
+  const btn=document.getElementById('btn-confirm');
+  if(S.todayConfirmed){
+    btn.className='btn-confirm done-today';btn.textContent='🎉 今天已完成！宠物吃饱啦！';btn.onclick=null;
+  }else if(count>=1){
+    btn.className='btn-confirm ready';
+    btn.textContent=count===3?'🐾 三科全完成！叫爸妈确认！':`✅ 完成了${count}科，叫爸妈来确认！`;
+    btn.onclick=openParentModal;
+  }else{
+    btn.className='btn-confirm notready';btn.textContent='先勾选完成的作业吧～';btn.onclick=null;
   }
-  // Reward preview
-  const coins = count * 2;
-  const foods = ['🍙','🍖','🧁'].slice(0, count);
-  document.getElementById('today-reward-coins').textContent = '🪙×' + coins;
-  document.getElementById('today-reward-food').textContent = foods.join('') || '—';
-  document.getElementById('today-reward-bonus').textContent = count === 3 ? '⭐×1 🔥+1' : '—';
+  // hunger
+  const pct=S.todayConfirmed?100:count*33.3;
+  const fill=document.getElementById('hunger-fill');
+  fill.style.width=pct+'%';
+  fill.style.background=pct>=100?'linear-gradient(90deg,#06D6A0,#00B384)':pct>=66?'linear-gradient(90deg,#FFD166,#FFA500)':pct>=33?'linear-gradient(90deg,#FF8FAB,#FF6B9D)':'#E0E0E0';
+  document.getElementById('hunger-text').textContent=['饿着呢...😢','有点饿','快饱了！','吃饱啦！🎉'][Math.min(count,3)];
+  document.getElementById('hunger-hint').textContent=S.todayConfirmed?'今天的宠物很开心！':count===0?'完成1科喂饱33%，完成越多越开心！':count<3?`再完成${3-count}科就全饱啦！`:'全部完成！快叫家长确认！';
+  // reward preview
+  const foodEmojis=['chinese','math','english'].filter(s=>S.todaySubjects[s]).map(s=>sf[s]).join('');
+  document.getElementById('today-reward-coins').textContent='🪙×'+(count*2);
+  document.getElementById('today-reward-food').textContent=foodEmojis||'—';
+  document.getElementById('today-reward-bonus').textContent=count===3?'⭐×1 🔥+1':count>0?'⭐×1':'—';
 }
 
-function updateWeekGrid() {
-  const days = ['一','二','三','四','五','六','日'];
-  const grid = document.getElementById('week-grid');
-  grid.innerHTML = '';
-  // Build week
-  const weekStartDate = new Date(S.weekStart);
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(weekStartDate);
-    d.setDate(d.getDate() + i);
-    const dateStr = d.toISOString().slice(0,10);
-    const isToday = dateStr === today;
-    const done = S.weekDays.includes(dateStr);
-    const isPast = dateStr < today;
-    let cls = 'day-cell';
-    let icon = '';
-    if (done) { cls += ' completed'; icon = '🐾'; }
-    else if (isToday) { cls += ' today'; icon = '📝'; }
-    else if (isPast) { cls += ' missed'; icon = '💤'; }
-    else { cls += ' future'; icon = ''; }
-    grid.innerHTML += `<div class="${cls}">
-      <div class="day-name">周${days[i]}</div>
-      <div class="day-icon">${icon}</div>
-    </div>`;
+function updateWeekGrid(){
+  const days=['一','二','三','四','五','六','日'];
+  const grid=document.getElementById('week-grid');grid.innerHTML='';
+  const ws=new Date(S.weekStart);
+  for(let i=0;i<7;i++){
+    const d=new Date(ws);d.setDate(d.getDate()+i);
+    const ds=d.toISOString().slice(0,10);
+    const isToday=ds===today,done=S.weekDays.includes(ds),isPast=ds<today;
+    let cls='day-cell',icon='';
+    if(done){cls+=' completed';icon='🐾';}
+    else if(isToday){cls+=' today';icon='📝';}
+    else if(isPast){cls+=' missed';icon='💤';}
+    else cls+=' future';
+    grid.innerHTML+=`<div class="${cls}"><div class="day-name">周${days[i]}</div><div class="day-icon">${icon}</div></div>`;
   }
 }
-
-function updateWeeklyRewards() {
-  const weekDone = S.weekDays.length;
-  const list = document.getElementById('weekly-rewards-list');
-  list.innerHTML = '';
-  WEEKLY_REWARDS.forEach(r => {
-    const claimed = S.weeklyClaimedBoxes.includes(r.days);
-    const canClaim = weekDone >= r.days && !claimed;
-    list.innerHTML += `<div class="weekly-reward-card" style="${claimed ? 'opacity:0.6' : ''}">
+function updateWeeklyRewards(){
+  const wd=S.weekDays.length,list=document.getElementById('weekly-rewards-list');list.innerHTML='';
+  WEEKLY_REWARDS.forEach(r=>{
+    const claimed=S.weeklyClaimedBoxes.includes(r.days),canClaim=wd>=r.days&&!claimed;
+    list.innerHTML+=`<div class="weekly-reward-card" style="${claimed?'opacity:.6':''}">
       <div class="weekly-reward-icon">${r.icon}</div>
       <div class="weekly-reward-info">
-        <div class="weekly-reward-title">${r.title} ${claimed ? '✅' : ''}</div>
+        <div class="weekly-reward-title">${r.title} ${claimed?'✅':''}</div>
         <div class="weekly-reward-desc">${r.desc}</div>
-        <div class="weekly-reward-prog">奖励：${r.reward}</div>
-        <div class="weekly-reward-prog" style="margin-top:4px">本周已完成 ${weekDone}/7 天</div>
+        <div class="weekly-reward-prog">🎁 ${r.reward}</div>
+        <div class="weekly-reward-prog" style="margin-top:3px">本周 ${wd}/7 天</div>
       </div>
-      ${canClaim ? `<button onclick="claimWeeklyBox(${r.days})" style="background:linear-gradient(135deg,#FFD166,#FFA500);color:white;border:none;border-radius:12px;padding:8px 14px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;">领取！</button>` : ''}
+      ${canClaim?`<button onclick="claimWeeklyBox(${r.days})" style="background:linear-gradient(135deg,#FFD166,#FFA500);color:white;border:none;border-radius:11px;padding:8px 12px;font-weight:800;cursor:pointer;font-family:inherit;font-size:13px">领取！</button>`:''}
     </div>`;
   });
 }
-
-function claimWeeklyBox(days) {
+function claimWeeklyBox(days){
   S.weeklyClaimedBoxes.push(days);
-  let coinsGained = days === 3 ? 5 : days === 5 ? 10 : 20;
-  S.coins += coinsGained;
-  save();
-  updateAll();
-  showCelebrate(days === 7 ? '💎' : days === 5 ? '📦' : '🎁',
-    '宝箱开启！',
-    `获得了 🪙×${coinsGained} 爱心币！\n继续加油解锁更多奖励！`);
+  const coins=days===3?5:days===5?10:20;S.coins+=coins;save();updateAll();
+  showCelebrate(days===7?'💎':days===5?'📦':'🎁','宝箱开启！',`获得了 🪙×${coins} 爱心币！\n继续加油解锁更多奖励！`);
   launchConfetti();
 }
-
-function updateShop() {
-  const foodGrid = document.getElementById('food-grid');
-  foodGrid.innerHTML = '';
-  FOODS.forEach(f => {
-    const unlocked = S.totalDays >= f.unlock;
-    const canAfford = S.coins >= f.price;
-    const isFree = f.price === 0;
-    foodGrid.innerHTML += `<div class="shop-item ${!unlocked ? 'locked' : ''}" onclick="${unlocked ? `buyFood('${f.id}')` : ''}">
-      ${!unlocked ? `<span class="lock-badge">🔒</span>` : ''}
-      <div class="item-emoji">${f.emoji}</div>
-      <div class="item-name">${f.name}</div>
-      <div class="item-price">${isFree ? '每日赠送' : `🪙 ${f.price}`}</div>
-      ${!unlocked ? `<div class="unlock-info">满${f.unlock}天解锁</div>` : ''}
+function updateShop(){
+  const foods=PET_FOODS[S.pet]?.shop||PET_FOODS.dog.shop;
+  const fg=document.getElementById('food-grid');fg.innerHTML='';
+  foods.forEach(f=>{
+    const ul=S.totalDays>=f.unlock;
+    fg.innerHTML+=`<div class="shop-item ${!ul?'locked':''}" onclick="${ul?`buyFood('${f.id}','${f.name}','${f.emoji}',${f.price})`:''}">
+      ${!ul?`<span class="lock-badge">🔒</span>`:''}
+      <div class="item-emoji">${f.emoji}</div><div class="item-name">${f.name}</div>
+      <div class="item-price">${f.price===0?'每日赠送':'🪙 '+f.price}</div>
+      <div class="unlock-info">${!ul?`满${f.unlock}天解锁`:f.desc}</div>
     </div>`;
   });
-
-  const roomGrid = document.getElementById('room-grid');
-  roomGrid.innerHTML = '';
-  ROOM_ITEMS.forEach(r => {
-    const unlocked = S.totalDays >= r.unlock;
-    const owned = S.ownedRoom.includes(r.id);
-    roomGrid.innerHTML += `<div class="shop-item ${!unlocked ? 'locked' : ''} ${owned ? 'owned' : ''}" onclick="${unlocked && !owned ? `buyRoom('${r.id}')` : ''}">
-      ${!unlocked ? `<span class="lock-badge">🔒</span>` : ''}
-      <div class="item-emoji">${r.emoji}</div>
-      <div class="item-name">${r.name}</div>
-      <div class="item-price">${owned ? '✅ 已拥有' : `🪙 ${r.price}`}</div>
-      ${!unlocked ? `<div class="unlock-info">满${r.unlock}天解锁</div>` : ''}
+  const rg=document.getElementById('room-grid');rg.innerHTML='';
+  ROOM_ITEMS.forEach(r=>{
+    const ul=S.totalDays>=r.unlock,owned=S.ownedRoom.includes(r.id);
+    rg.innerHTML+=`<div class="shop-item ${!ul?'locked':''} ${owned?'owned':''}" onclick="${ul&&!owned?`buyRoom('${r.id}')`:''}" >
+      ${!ul?`<span class="lock-badge">🔒</span>`:''}
+      <div class="item-emoji">${r.emoji}</div><div class="item-name">${r.name}</div>
+      <div class="item-price">${owned?'✅ 已拥有':'🪙 '+r.price}</div>
+      <div class="unlock-info">${!ul?`满${r.unlock}天解锁`:r.desc}</div>
     </div>`;
   });
 }
-
-function buyFood(id) {
-  const f = FOODS.find(x => x.id === id);
-  if (!f || f.price === 0) { showToast(`${f.emoji} 宠物开心地吃了${f.name}！`); return; }
-  if (S.coins < f.price) { showToast('爱心币不够啦，继续写作业！'); return; }
-  S.coins -= f.price;
-  save();
-  updateAll();
-  showToast(`${f.emoji} 宠物美美地享用了${f.name}！`);
-  petHappy();
+function buyFood(id,name,emoji,price){
+  if(price===0){showToast(`${emoji} 宠物开心地吃了${name}！`);petHappy();return;}
+  if(S.coins<price){showToast('爱心币不够啦，继续写作业！');return;}
+  S.coins-=price;save();updateAll();showToast(`${emoji} 宠物美美享用了${name}！`);petHappy();
 }
-
-function buyRoom(id) {
-  const r = ROOM_ITEMS.find(x => x.id === id);
-  if (!r) return;
-  if (S.coins < r.price) { showToast('爱心币不够！坚持写作业赚币！'); return; }
-  S.coins -= r.price;
-  S.ownedRoom.push(r.id);
-  // Auto-place
-  if (r.slot === 'left' && !S.placedRoom.left) S.placedRoom.left = r.id;
-  if (r.slot === 'right' && !S.placedRoom.right) S.placedRoom.right = r.id;
-  save();
-  updateAll();
-  showToast(`${r.emoji} ${r.name}放进房间啦！`);
+function buyRoom(id){
+  const r=ROOM_ITEMS.find(x=>x.id===id);if(!r)return;
+  if(S.coins<r.price){showToast('爱心币不够！坚持写作业！');return;}
+  S.coins-=r.price;S.ownedRoom.push(r.id);
+  if(r.slot==='left'&&!S.placedRoom.left)S.placedRoom.left=r.id;
+  if(r.slot==='right'&&!S.placedRoom.right)S.placedRoom.right=r.id;
+  save();updateAll();showToast(`${r.emoji} ${r.name}放进房间啦！`);
 }
-
-function updateWardrobe() {
-  renderWardrobeSection('hat-grid', HATS, S.ownedHats, S.hat, 'equipHat');
-  renderWardrobeSection('clothes-grid', CLOTHES, S.ownedClothes, S.clothes, 'equipClothes');
-  renderWardrobeSection('acc-grid', ACCS, S.ownedAccs, S.acc, 'equipAcc');
+function updateWardrobe(){
+  renderWG('hat-grid',HATS,S.ownedHats,S.hat,'equipHat');
+  renderWG('clothes-grid',CLOTHES,S.ownedClothes,S.clothes,'equipClothes');
+  renderWG('acc-grid',ACCS,S.ownedAccs,S.acc,'equipAcc');
 }
-
-function renderWardrobeSection(gridId, items, owned, equipped, fn) {
-  const grid = document.getElementById(gridId);
-  grid.innerHTML = '';
-  items.forEach(item => {
-    const isOwned = owned.includes(item.id);
-    const isEquipped = item.id === equipped;
-    const unlockNeeded = !isOwned && item.unlock > 0;
-    grid.innerHTML += `<div class="wardrobe-item ${isEquipped ? 'equipped' : ''} ${!isOwned ? 'locked' : ''}"
-      onclick="${isOwned ? `${fn}('${item.id}')` : ''}">
-      <div class="item-emoji">${item.emoji || '🚫'}</div>
-      <div class="item-label">${item.name}${unlockNeeded ? `\n${item.unlock}天` : ''}</div>
+function renderWG(id,items,owned,equipped,fn){
+  const g=document.getElementById(id);g.innerHTML='';
+  items.forEach(item=>{
+    const isO=owned.includes(item.id),isE=item.id===equipped;
+    g.innerHTML+=`<div class="wardrobe-item ${isE?'equipped':''} ${!isO?'locked':''}" onclick="${isO?`${fn}('${item.id}')`:''}" >
+      <div class="item-emoji">${item.emoji||'🚫'}</div>
+      <div class="item-label">${item.name}${!isO&&item.unlock?'\n'+item.unlock+'天':''}</div>
     </div>`;
   });
 }
-
-function equipHat(id) { S.hat = id; save(); updatePet(); updateWardrobe(); }
-function equipClothes(id) { S.clothes = id; save(); updatePet(); updateWardrobe(); }
-function equipAcc(id) { S.acc = id; save(); updatePet(); updateWardrobe(); }
-
-function updateMilestones() {
-  const list = document.getElementById('milestone-list');
-  list.innerHTML = '';
-  MILESTONES.forEach(m => {
-    const done = S.totalDays >= m.days;
-    const isCurrent = !done && S.totalDays < m.days &&
-      (MILESTONES.indexOf(m) === 0 || S.totalDays >= MILESTONES[MILESTONES.indexOf(m)-1].days);
-    let cls = 'milestone-item ';
-    cls += done ? 'unlocked' : isCurrent ? 'current' : 'locked-ms';
-    list.innerHTML += `<div class="${cls}">
+function equipHat(id){S.hat=id;save();updatePetDisplay();updateWardrobe();}
+function equipClothes(id){S.clothes=id;save();updatePetDisplay();updateWardrobe();}
+function equipAcc(id){S.acc=id;save();updatePetDisplay();updateWardrobe();}
+function updateMilestones(){
+  const list=document.getElementById('milestone-list');list.innerHTML='';
+  MILESTONES.forEach((m,i)=>{
+    const done=S.totalDays>=m.days;
+    const isCurrent=!done&&(i===0||S.totalDays>=MILESTONES[i-1].days);
+    list.innerHTML+=`<div class="milestone-item ${done?'unlocked':isCurrent?'current':'locked-ms'}">
       <div class="milestone-icon">${m.icon}</div>
       <div class="milestone-info">
-        <div class="milestone-name">${m.name} <small style="color:var(--sub);font-size:11px">（${m.days}天）</small></div>
+        <div class="milestone-name">${m.name} <small style="color:var(--sub);font-size:10px">（${m.days}天）</small></div>
         <div class="milestone-desc">${m.desc}</div>
-        <div style="font-size:12px;color:var(--purple);margin-top:4px;font-weight:700">🎁 ${m.reward}</div>
-        ${isCurrent ? `<div style="font-size:11px;color:var(--orange);margin-top:4px">还差 ${m.days - S.totalDays} 天！加油！</div>` : ''}
+        <div style="font-size:11px;color:var(--purple);margin-top:3px;font-weight:700">🎁 ${m.reward}</div>
+        ${isCurrent?`<div style="font-size:10px;color:var(--orange);margin-top:3px">还差 ${m.days-S.totalDays} 天！加油！</div>`:''}
       </div>
-      <div class="milestone-badge">${done ? '✅' : isCurrent ? '👉' : '🔒'}</div>
+      <div class="milestone-badge">${done?'✅':isCurrent?'👉':'🔒'}</div>
     </div>`;
   });
 }
-
-function updateUnlockProgress() {
-  const next = MILESTONES.find(m => S.totalDays < m.days);
-  if (!next) {
-    document.getElementById('next-unlock-icon').textContent = '🎓';
-    document.getElementById('next-unlock-name').textContent = '全部解锁！厉害！';
-    document.getElementById('next-unlock-progress-text').textContent = '';
-    document.getElementById('progress-fill').style.width = '100%';
-    return;
+function updateUnlockProgress(){
+  const next=MILESTONES.find(m=>S.totalDays<m.days);
+  if(!next){
+    document.getElementById('next-unlock-name').textContent='全部解锁！你是冠军！';
+    document.getElementById('next-unlock-prog-text').textContent='';
+    document.getElementById('progress-fill').style.width='100%';return;
   }
-  const prev = MILESTONES[MILESTONES.indexOf(next) - 1];
-  const base = prev ? prev.days : 0;
-  const pct = Math.min(100, ((S.totalDays - base) / (next.days - base)) * 100);
-  document.getElementById('next-unlock-icon').textContent = next.icon;
-  document.getElementById('next-unlock-name').textContent = next.name;
-  document.getElementById('next-unlock-progress-text').textContent = `${S.totalDays}/${next.days}天`;
-  document.getElementById('progress-fill').style.width = pct + '%';
+  const idx=MILESTONES.indexOf(next),base=idx>0?MILESTONES[idx-1].days:0;
+  const pct=Math.min(100,((S.totalDays-base)/(next.days-base))*100);
+  document.getElementById('next-unlock-name').textContent=next.icon+' '+next.name;
+  document.getElementById('next-unlock-prog-text').textContent=`${S.totalDays}/${next.days}天`;
+  document.getElementById('progress-fill').style.width=pct+'%';
 }
 
-// ===== HOMEWORK =====
-function toggleSubject(id) {
-  if (S.todayConfirmed) return;
-  S.todaySubjects[id] = !S.todaySubjects[id];
-  save();
-  updateHomework();
+// ====== HOMEWORK ======
+function toggleSubject(id){
+  if(S.todayConfirmed)return;
+  S.todaySubjects[id]=!S.todaySubjects[id];save();updateHomework();updatePetDisplay();
 }
-
-// ===== PARENT MODAL =====
-function openParentModal() {
-  if (completedCount() < 3) { showToast('先完成全部作业哦！'); return; }
-  pinValue = '';
-  updatePinDisplay();
-  document.getElementById('parent-modal').classList.add('show');
+function openParentModal(){
+  if(completedCount()<1){showToast('至少完成1科才能提交！');return;}
+  const c=completedCount();
+  document.getElementById('modal-sub-text').textContent=c===3?'三科全完成！家长输密码确认 🎉':`完成了${c}科，家长输密码确认`;
+  pinValue='';updatePinDisplay();document.getElementById('parent-modal').classList.add('show');
 }
-
-function closeModal() {
-  pinValue = '';
-  updatePinDisplay();
-  document.getElementById('parent-modal').classList.remove('show');
-}
-
-function pinInput(d) {
-  if (pinValue.length >= 4) return;
-  pinValue += d;
-  updatePinDisplay();
-}
-
-function pinDelete() {
-  pinValue = pinValue.slice(0, -1);
-  updatePinDisplay();
-}
-
-function updatePinDisplay(error) {
-  for (let i = 0; i < 4; i++) {
-    const dot = document.getElementById('dot-' + i);
-    dot.textContent = i < pinValue.length ? '●' : '';
-    dot.className = 'pin-dot' + (i < pinValue.length ? ' filled' : '') + (error ? ' error' : '');
+function closeModal(){pinValue='';updatePinDisplay();document.getElementById('parent-modal').classList.remove('show');}
+function pinInput(d){if(pinValue.length>=4)return;pinValue+=d;updatePinDisplay();}
+function pinDelete(){pinValue=pinValue.slice(0,-1);updatePinDisplay();}
+function updatePinDisplay(error){
+  for(let i=0;i<4;i++){
+    const dot=document.getElementById('dot-'+i);
+    dot.textContent=i<pinValue.length?'●':'';
+    dot.className='pin-dot'+(i<pinValue.length?' filled':'')+(error?' error':'');
   }
 }
-
-function pinConfirm() {
-  if (pinValue !== PIN) {
-    updatePinDisplay(true);
-    setTimeout(() => { pinValue = ''; updatePinDisplay(); }, 1000);
-    return;
-  }
-  closeModal();
-  confirmHomework();
+function pinConfirm(){
+  if(pinValue!==PIN){updatePinDisplay(true);setTimeout(()=>{pinValue='';updatePinDisplay();},1000);return;}
+  closeModal();confirmHomework();
 }
-
-function confirmHomework() {
-  const prevTotal = S.totalDays;
-  S.todayConfirmed = true;
-  S.lastDate = today;
-  S.streak++;
-  S.totalDays++;
-  S.coins += 6; // 3 subjects × 2
-  if (!S.weekDays.includes(today)) S.weekDays.push(today);
-
-  // Check milestone unlocks
-  const newMilestone = MILESTONES.find(m => m.days === S.totalDays);
-
-  // Unlock wardrobe items based on milestones
-  if (S.totalDays >= 14 && !S.ownedHats.includes('magic')) S.ownedHats.push('magic');
-  if (S.totalDays >= 30 && !S.ownedHats.includes('crown')) S.ownedHats.push('crown');
-  if (S.totalDays >= 45 && !S.ownedHats.includes('santa')) S.ownedHats.push('santa');
-  if (S.totalDays >= 90 && !S.ownedHats.includes('grad')) S.ownedHats.push('grad');
-  if (S.totalDays >= 14 && !S.ownedClothes.includes('bow')) S.ownedClothes.push('bow');
-  if (S.totalDays >= 30 && !S.ownedClothes.includes('cape')) S.ownedClothes.push('cape');
-  if (S.totalDays >= 60 && !S.ownedClothes.includes('star')) S.ownedClothes.push('star');
-  if (S.totalDays >= 7  && !S.ownedAccs.includes('heart')) S.ownedAccs.push('heart');
-  if (S.totalDays >= 75 && !S.ownedAccs.includes('rainbow')) S.ownedAccs.push('rainbow');
-  if (S.totalDays >= 90 && !S.ownedAccs.includes('medal')) S.ownedAccs.push('medal');
-
-  save();
-  updateAll();
-  launchConfetti();
-
-  if (newMilestone) {
-    setTimeout(() => {
-      showCelebrate(newMilestone.icon, `🎊 解锁：${newMilestone.name}！`,
-        `${newMilestone.desc}\n🎁 ${newMilestone.reward}`);
-    }, 1200);
-  } else {
-    showCelebrate('🎉', `太棒了！连续${S.streak}天！`,
-      `宠物吃饱啦！获得 🪙×6\n今天累计完成第 ${S.totalDays} 天！`);
+function confirmHomework(){
+  const count=completedCount();
+  S.todayConfirmed=true;S.lastDate=today;S.streak++;S.totalDays++;S.coins+=count*2;
+  if(!S.weekDays.includes(today))S.weekDays.push(today);
+  // milestone unlocks
+  if(S.totalDays>=7&&!S.ownedRoom.includes('house')){S.ownedRoom.push('house');S.placedRoom.left='house';}
+  if(S.totalDays>=14){if(!S.ownedHats.includes('magic'))S.ownedHats.push('magic');if(!S.ownedClothes.includes('bow'))S.ownedClothes.push('bow');}
+  if(S.totalDays>=30){if(!S.ownedHats.includes('crown'))S.ownedHats.push('crown');if(!S.ownedClothes.includes('cape'))S.ownedClothes.push('cape');}
+  if(S.totalDays>=45&&!S.ownedHats.includes('santa'))S.ownedHats.push('santa');
+  if(S.totalDays>=60&&!S.ownedClothes.includes('star'))S.ownedClothes.push('star');
+  if(S.totalDays>=7&&!S.ownedAccs.includes('heart'))S.ownedAccs.push('heart');
+  if(S.totalDays>=75&&!S.ownedAccs.includes('rainbow'))S.ownedAccs.push('rainbow');
+  if(S.totalDays>=90){if(!S.ownedHats.includes('grad'))S.ownedHats.push('grad');if(!S.ownedAccs.includes('medal'))S.ownedAccs.push('medal');}
+  save();updateAll();launchConfetti();
+  const sf=PET_FOODS[S.pet]?.subjects||PET_FOODS.dog.subjects;
+  const foodsGot=['chinese','math','english'].filter(s=>S.todaySubjects[s]).map(s=>sf[s]).join(' ');
+  const newMs=MILESTONES.find(m=>m.days===S.totalDays);
+  if(newMs){
+    setTimeout(()=>showCelebrate(newMs.icon,`🎊 解锁：${newMs.name}！`,`${newMs.desc}\n🎁 ${newMs.reward}`),1000);
+  }else{
+    const msg=count===3?`三科全完成！太棒了！\n获得 🪙×${count*2} + ${foodsGot}\n🔥 连续${S.streak}天！`
+      :`完成了${count}科！不错哦！\n获得 🪙×${count*2} + ${foodsGot}\n明天继续加油！`;
+    showCelebrate('🎉','提交成功！',msg);
   }
 }
 
-// ===== UI HELPERS =====
-function switchTab(tab, el) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-' + tab).classList.add('active');
-  el.classList.add('active');
-  if (tab === 'week') updateWeekGrid(), updateWeeklyRewards();
-  if (tab === 'shop') updateShop();
-  if (tab === 'wardrobe') updateWardrobe();
-  if (tab === 'milestones') updateMilestones();
+// ====== UI ======
+function switchTab(tab,el){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');el.classList.add('active');
+  if(tab==='week'){updateWeekGrid();updateWeeklyRewards();}
+  if(tab==='shop')updateShop();
+  if(tab==='wardrobe')updateWardrobe();
+  if(tab==='milestones')updateMilestones();
 }
-
-function petTap() {
-  const p = PETS[S.pet];
-  const msg = p.speech[Math.floor(Math.random() * p.speech.length)];
-  document.getElementById('pet-speech').textContent = msg;
-  const el = document.getElementById('pet-display');
-  el.style.transform = 'scale(1.2)';
-  setTimeout(() => el.style.transform = '', 200);
+function petTap(){
+  const msgs=PETS[S.pet].speech;
+  document.getElementById('pet-speech').textContent=msgs[Math.floor(Math.random()*msgs.length)];
+  const w=document.getElementById('pet-svg-wrap');
+  w.style.transform='scale(1.15)';setTimeout(()=>w.style.transform='',200);
 }
-
-function petHappy() {
-  const el = document.getElementById('pet-display');
-  el.classList.add('anim-bounce');
-  setTimeout(() => el.classList.remove('anim-bounce'), 1500);
+function petHappy(){
+  const w=document.getElementById('pet-svg-wrap');
+  w.style.transform='scale(1.1) rotate(5deg)';
+  setTimeout(()=>{w.style.transform='scale(1.1) rotate(-5deg)';},150);
+  setTimeout(()=>{w.style.transform='';},300);
 }
-
-let speechIdx = 0;
-function startSpeechLoop() {
-  setInterval(() => {
-    if (!S.todayConfirmed) {
-      const msgs = S.todayConfirmed
-        ? ['汪！今天好棒！🎉']
-        : completedCount() === 3
-        ? ['全部写完啦！叫家长来吧！', '等家长确认就能吃饭啦！']
-        : completedCount() === 0
-        ? PETS[S.pet].speech.slice(1, 2)
-        : ['继续加油！快写完了！', '我在为你加油！'];
-      const s = msgs[speechIdx % msgs.length];
-      document.getElementById('pet-speech').textContent = s;
-      speechIdx++;
-    }
-  }, 4000);
+let si=0;
+function startSpeechLoop(){
+  setInterval(()=>{
+    if(S.todayConfirmed)return;
+    const count=completedCount();
+    const pool=count===3?['全部写完！快叫家长来！','三科都好啦！叫爸妈确认~']:
+      count===0?PETS[S.pet].speech.slice(0,2):['加油！快写完了！','再写一点就好啦！'];
+    document.getElementById('pet-speech').textContent=pool[si%pool.length];si++;
+  },4000);
 }
-
-function showToast(msg) {
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2500);
+function showToast(msg){
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2300);
 }
-
-function showCelebrate(icon, title, desc) {
-  document.getElementById('cel-icon').textContent = icon;
-  document.getElementById('cel-title').textContent = title;
-  document.getElementById('cel-desc').textContent = desc;
+function showCelebrate(icon,title,desc){
+  document.getElementById('cel-icon').textContent=icon;
+  document.getElementById('cel-title').textContent=title;
+  document.getElementById('cel-desc').textContent=desc;
   document.getElementById('celebrate-overlay').classList.add('show');
 }
-
-function closeCelebrate() {
-  document.getElementById('celebrate-overlay').classList.remove('show');
-}
-
-function launchConfetti() {
-  const colors = ['#FF8FAB','#FFD166','#06D6A0','#118AB2','#9B5DE5','#FF6B35'];
-  for (let i = 0; i < 40; i++) {
-    setTimeout(() => {
-      const el = document.createElement('div');
-      el.className = 'confetti-piece';
-      el.style.cssText = `
-        left:${Math.random()*100}vw;
-        top:-10px;
-        background:${colors[Math.floor(Math.random()*colors.length)]};
-        width:${6+Math.random()*8}px;
-        height:${6+Math.random()*8}px;
-        border-radius:${Math.random()>0.5?'50%':'2px'};
-        animation-duration:${1.5+Math.random()*2}s;
-        animation-delay:${Math.random()*0.5}s;
-      `;
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 3500);
-    }, i * 30);
+function closeCelebrate(){document.getElementById('celebrate-overlay').classList.remove('show');}
+function launchConfetti(){
+  const colors=['#FF8FAB','#FFD166','#06D6A0','#118AB2','#9B5DE5','#FF6B35'];
+  for(let i=0;i<45;i++){
+    setTimeout(()=>{
+      const el=document.createElement('div');el.className='confetti-piece';
+      el.style.cssText=`left:${Math.random()*100}vw;top:-10px;background:${colors[Math.floor(Math.random()*colors.length)]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;border-radius:${Math.random()>.5?'50%':'2px'};animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*.4}s;`;
+      document.body.appendChild(el);setTimeout(()=>el.remove(),3500);
+    },i*25);
   }
 }
-
-// ===== BOOT =====
-window.onload = () => {
-  const hasSave = !!localStorage.getItem('pet_homework_v3');
-  if (hasSave) {
+window.onload=()=>{
+  ['dog','cat','dino','bird'].forEach(p=>{
+    const el=document.getElementById('preview-'+p);
+    if(el)el.innerHTML=makePet(p,72,'happy');
+  });
+  if(localStorage.getItem('pet_hw_v4')){
     document.getElementById('screen-select').classList.remove('active');
     document.getElementById('screen-main').classList.add('active');
     initMain();
