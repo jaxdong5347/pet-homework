@@ -174,7 +174,7 @@
     </div>
     <div class="pet-option" data-pet="bird" onclick="selectPet('bird',this)">
       <div id="preview-bird"></div>
-      <div class="pet-name">小鸟鸟</div><div class="pet-desc">自由又快乐 🌈</div>
+      <div class="pet-name">小雪鸮</div><div class="pet-desc">聪明又神秘 🦉</div>
     </div>
   </div>
   <button class="btn-start" onclick="startGame()">✨ 出发！</button>
@@ -416,50 +416,13 @@ function makePet(type, sz, mood) {
     </svg>`;
   }
   if(type==='bird') {
-    const wingStyle = isHappy?`style="animation:wing-flap .4s ease-in-out infinite;transform-origin:-28px 44px"`:'';
-    const birdBlush = isHappy?`<ellipse cx="-20" cy="8" rx="7" ry="5" fill="#FF8A65" opacity=".7"/><ellipse cx="20" cy="8" rx="7" ry="5" fill="#FF8A65" opacity=".7"/>`:'';
-    const birdEyeH = `<path d="M-4,0 Q0,-5 4,0" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round"/>`;
-    const birdEyeN = `<circle r="4" fill="#1A237E"/><circle cx="1.2" cy="-1" r="1.5" fill="white"/>`;
-    const birdEyeS = `<circle r="3.5" fill="#555"/><path d="M-5,-5 Q-3,-8 -1,-5" fill="none" stroke="#555" stroke-width="1.5"/>`;
-    const bEye = isHappy?birdEyeH:isSad?birdEyeS:birdEyeN;
-    const tailAnim = isHappy?`style="animation:tail-wag .7s ease-in-out infinite;transform-origin:0 72px"`:'';
-    return `<svg width="${s}" height="${Math.round(s*1.35)}" viewBox="-50 -52 100 140" class="pet-svg">
-      <g ${tailAnim}>
-        <path d="M-12,72 Q-22,96 -10,102 Q0,107 6,90 Q12,102 22,100 Q30,96 20,78 Z" fill="#29B6F6"/>
-        <path d="M0,72 Q4,88 0,100" fill="#0288D1" opacity=".5" stroke="none"/>
-      </g>
-      <ellipse cx="0" cy="50" rx="28" ry="30" fill="#4FC3F7"/>
-      <ellipse cx="0" cy="55" rx="17" ry="20" fill="#E1F5FE"/>
-      <g ${wingStyle}>
-        <path d="M-28,42 Q-64,28 -66,60 Q-64,76 -42,68 Q-32,60 -28,55Z" fill="#29B6F6"/>
-        <path d="M-52,40 Q-66,33 -68,50" fill="none" stroke="#0288D1" stroke-width="1.5" opacity=".6"/>
-        <path d="M-42,35 Q-58,26 -60,44" fill="none" stroke="#0288D1" stroke-width="1.5" opacity=".6"/>
-      </g>
-      <g style="transform:scaleX(-1)" ${wingStyle}>
-        <path d="M-28,42 Q-64,28 -66,60 Q-64,76 -42,68 Q-32,60 -28,55Z" fill="#29B6F6"/>
-        <path d="M-52,40 Q-66,33 -68,50" fill="none" stroke="#0288D1" stroke-width="1.5" opacity=".6"/>
-        <path d="M-42,35 Q-58,26 -60,44" fill="none" stroke="#0288D1" stroke-width="1.5" opacity=".6"/>
-      </g>
-      <g transform="translate(-12,78)">
-        <line x1="0" y1="0" x2="-11" y2="16" stroke="#FF8F00" stroke-width="3" stroke-linecap="round"/>
-        <line x1="0" y1="0" x2="0" y2="18" stroke="#FF8F00" stroke-width="3" stroke-linecap="round"/>
-        <line x1="0" y1="0" x2="11" y2="16" stroke="#FF8F00" stroke-width="3" stroke-linecap="round"/>
-      </g>
-      <g transform="translate(12,78)">
-        <line x1="0" y1="0" x2="-11" y2="16" stroke="#FF8F00" stroke-width="3" stroke-linecap="round"/>
-        <line x1="0" y1="0" x2="0" y2="18" stroke="#FF8F00" stroke-width="3" stroke-linecap="round"/>
-        <line x1="0" y1="0" x2="11" y2="16" stroke="#FF8F00" stroke-width="3" stroke-linecap="round"/>
-      </g>
-      <ellipse cx="0" cy="5" rx="30" ry="28" fill="#4FC3F7"/>
-      <path d="M-8,-22 Q-10,-44 -4,-40 Q0,-50 4,-40 Q10,-44 8,-22" fill="#0288D1"/>
-      <path d="M-9,14 L0,22 L9,14" fill="#FF8F00"/>
-      <line x1="-9" y1="14" x2="9" y2="14" stroke="#E65100" stroke-width="1.5"/>
-      ${birdBlush}
-      <circle cx="-14" cy="2" r="8" fill="white"/><circle cx="14" cy="2" r="8" fill="white"/>
-      <g transform="translate(-14,2)"><g class="eye-blink">${bEye}</g></g>
-      <g transform="translate(14,2)"><g class="eye-blink">${bEye}</g></g>
-      ${cry}
-    </svg>`;
+    const imgSrc = isSad ? './owl_sad.png' : './owl_happy.png';
+    const animStyle = isHappy
+      ? `style="animation:bounce 1.5s ease-in-out infinite;display:block"`
+      : isSad
+      ? `style="animation:float 2s ease-in-out infinite;display:block;filter:grayscale(20%) brightness(0.92)"`
+      : `style="display:block"`;
+    return `<img src="${imgSrc}" ${animStyle} width="${s}" height="${s}" style="object-fit:contain;border-radius:50%;${isHappy?'animation:bounce 1.5s ease-in-out infinite;':isSad?'animation:float 2s ease-in-out infinite;filter:grayscale(20%) brightness(0.92);':''}display:block"/>`;
   }
   return '';
 }
@@ -469,7 +432,7 @@ const PETS = {
   dog:  {name:'小狗狗',speech:['汪！好好写作业哦！','汪汪！我好饿~','你最棒啦！汪！','汪～摸摸我嘛','汪！一起加油！']},
   cat:  {name:'小猫猫',speech:['喵...写作业啦~','喵，我要吃鱼~','喵！你做到了！','喵～蹭蹭你','喵呜！加油！']},
   dino: {name:'小恐龙',speech:['嗷！勇敢写作业！','嗷嗷，饿了饿了~','嗷！你超厉害！','嗷～来嘛来嘛','嗷！冲冲冲！']},
-  bird: {name:'小鸟鸟',speech:['啾啾！写作业啦~','啾～我要吃虫虫','啾啾！飞起来啦！','啾～摸摸我','啾！加油加油！']},
+  bird: {name:'小雪鸮',speech:['呼！好好写作业哦~','呼呼～我好饿呀','呼！你超棒的！','呼～摸摸我嘛','呼！一起加油！']},
 };
 
 const PET_FOODS = {
@@ -915,10 +878,12 @@ function launchConfetti(){
   }
 }
 window.onload=()=>{
-  ['dog','cat','dino','bird'].forEach(p=>{
+  ['dog','cat','dino'].forEach(p=>{
     const el=document.getElementById('preview-'+p);
     if(el)el.innerHTML=makePet(p,72,'happy');
   });
+  const birdPreview=document.getElementById('preview-bird');
+  if(birdPreview)birdPreview.innerHTML=`<img src="./owl_happy.png" width="72" height="72" style="object-fit:contain;border-radius:50%"/>`;
   if(localStorage.getItem('pet_hw_v4')){
     document.getElementById('screen-select').classList.remove('active');
     document.getElementById('screen-main').classList.add('active');
